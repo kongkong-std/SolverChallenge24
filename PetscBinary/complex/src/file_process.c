@@ -24,7 +24,8 @@ void MatrixProcess(const char *path, Matrix *mat)
 
     if ((mat->row_idx = (int *)malloc(nnz * sizeof(int))) == NULL ||
         (mat->col_idx = (int *)malloc(nnz * sizeof(int))) == NULL ||
-        (mat->val = (double *)malloc(nnz * sizeof(double))) == NULL)
+        (mat->val_re = (double *)malloc(nnz * sizeof(double))) == NULL ||
+        (mat->val_im = (double *)malloc(nnz * sizeof(double))) == NULL)
     {
         fprintf(stderr, "Memory allocation failed!\n");
         exit(EXIT_FAILURE);
@@ -32,9 +33,10 @@ void MatrixProcess(const char *path, Matrix *mat)
 
     for (int index = 0; index < nnz; ++index)
     {
-        fscanf(fp, "%d%d%lf", mat->row_idx + index,
+        fscanf(fp, "%d%d%lf%lf", mat->row_idx + index,
                mat->col_idx + index,
-               mat->val + index);
+               mat->val_re + index,
+               mat->val_im + index);
     }
 
     fclose(fp);
@@ -53,15 +55,17 @@ void VectorProcess(const char *path, Vector *vec)
     fscanf(fp, "%d", &n);
     vec->n = n;
 
-    if ((vec->val = (double *)malloc(n * sizeof(double))) == NULL)
+    if ((vec->val_re = (double *)malloc(n * sizeof(double))) == NULL ||
+        (vec->val_im = (double *)malloc(n * sizeof(double))) == NULL)
     {
         fprintf(stderr, "Memory allocation failed!\n");
         exit(EXIT_FAILURE);
     }
 
-    for(int index = 0; index < n; ++index)
+    for (int index = 0; index < n; ++index)
     {
-        fscanf(fp, "%lf", vec->val + index);
+        fscanf(fp, "%lf%lf", vec->val_re + index,
+               vec->val_im + index);
     }
 
     fclose(fp);

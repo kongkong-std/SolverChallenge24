@@ -37,7 +37,7 @@ int main(int argc, char **argv)
     {
         int index_i = mat_a.row_idx[index] - 1;
         int index_j = mat_a.col_idx[index] - 1;
-        PetscScalar val_tmp = mat_a.val[index];
+        PetscScalar val_tmp = mat_a.val_re[index] + mat_a.val_im[index] * PETSC_i;
         PetscCall(MatSetValue(solver_mat, index_i, index_j, val_tmp, INSERT_VALUES));
     }
     PetscCall(MatAssemblyBegin(solver_mat, MAT_FINAL_ASSEMBLY));
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 
     for (int index = 0; index < n_size; ++index)
     {
-        PetscScalar val_tmp = rhs_b.val[index];
+        PetscScalar val_tmp = rhs_b.val_re[index] + rhs_b.val_im[index] * PETSC_i;
         PetscCall(VecSetValues(solver_rhs, 1, &index, &val_tmp, INSERT_VALUES));
     }
 
@@ -71,8 +71,10 @@ int main(int argc, char **argv)
     // free memory
     free(mat_a.row_idx);
     free(mat_a.col_idx);
-    free(mat_a.val);
-    free(rhs_b.val);
+    free(mat_a.val_re);
+    free(mat_a.val_im);
+    free(rhs_b.val_re);
+    free(rhs_b.val_im);
 
     PetscCall(MatDestroy(&solver_mat));
     PetscCall(VecDestroy(&solver_rhs));
@@ -83,5 +85,5 @@ int main(int argc, char **argv)
 
 // command
 /*
-* ./app_petsc_bin -mat <path/to/mat> -rhs <path/to/rhs>
-*/
+ * ./app_petsc_bin -mat <path/to/mat> -rhs <path/to/rhs>
+ */
