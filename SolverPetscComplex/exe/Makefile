@@ -35,13 +35,13 @@ OBJECT := $(patsubst %.c,%.o,$(wildcard $(SRC)/*.c))
 
 .PHONY: all clean
 
-all: app_agmg
+all: app_petsc_exe
 
-app_agmg: $(OBJECT)
-	$(CC) $(CMD) $(INCL) -o app_agmg $(OBJECT) $(LIB)
+app_petsc_exe: $(OBJECT)
+	$(CC) $(CMD) $(INCL) -o app_petsc_exe $(OBJECT) $(LIB)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CMD) $(INCL) "$<" -o "$@"
 
 clean:
-	rm app_agmg $(OBJECT)
+	rm app_petsc_exe $(OBJECT)
