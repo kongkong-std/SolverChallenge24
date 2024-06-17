@@ -101,18 +101,41 @@ void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver)
     PetscReal r_norm_2 = 0., r_norm_1 = 0., r_norm_infty = 0.;
 
     PetscCall(VecNorm(mysolver->solver_b, NORM_2, &b_norm_2));
+#if 0
     PetscCall(VecNorm(mysolver->solver_b, NORM_1, &b_norm_1));
     PetscCall(VecNorm(mysolver->solver_b, NORM_INFINITY, &b_norm_infty));
+#endif
 
     PetscCall(MatMult(mysolver->solver_a, mysolver->solver_x, mysolver->solver_r));
     PetscCall(VecAXPY(mysolver->solver_r, -1., mysolver->solver_b));
     PetscCall(VecNorm(mysolver->solver_r, NORM_2, &r_norm_2));
+#if 0
     PetscCall(VecNorm(mysolver->solver_r, NORM_1, &r_norm_1));
     PetscCall(VecNorm(mysolver->solver_r, NORM_INFINITY, &r_norm_infty));
+#endif
 
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L1-norm: \t|| r || / || b || = %021.16le\n", r_norm_1 / b_norm_1));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L2-norm: \t|| r || / || b || = %021.16le\n", r_norm_2 / b_norm_2));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Linfty-norm: \t|| r || / || b || = %021.16le\n", r_norm_infty / b_norm_infty));
+    // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L1-norm: \t|| r || / || b || = %021.16le\n", r_norm_1 / b_norm_1));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L2-norm: \t|| r || / || b || = %021.16le\n \
+    \t|| b || _ 2\n",
+                          r_norm_2 / b_norm_2, b_norm_2));
+    // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Linfty-norm: \t|| r || / || b || = %021.16le\n", r_norm_infty / b_norm_infty));
+
+#if 0
+    PetscViewer fd;                                   /* viewer */
+    char file_x[PETSC_MAX_PATH_LEN] = "solution.txt"; /* name of output file with solution vector */
+    // ierr = PetscOptionsGetString(NULL, NULL, "-f_x", file_x, sizeof(file_x), NULL); CHKERRQ(ierr);
+    PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, file_x, &fd));
+    PetscCall(PetscViewerPushFormat(fd, PETSC_VIEWER_DEFAULT));
+    PetscCall(VecView(mysolver->solver_x, fd));
+    PetscCall(PetscViewerPopFormat(fd));
+    PetscCall(PetscViewerDestroy(&fd));
+#endif
+
+    PetscCall(KSPDestroy(&(mysolver->ksp)));
+    PetscCall(MatDestroy(&(mysolver->solver_a)));
+    PetscCall(VecDestroy(&(mysolver->solver_b)));
+    PetscCall(VecDestroy(&(mysolver->solver_r)));
+    PetscCall(VecDestroy(&(mysolver->solver_x)));
 }
 
 void SolverPetscGetLinearSystem(const MySolver *mysolver, int *m, int *n, int *nnz,
@@ -178,12 +201,12 @@ void SolverPetscGetLinearSystem(const MySolver *mysolver, int *m, int *n, int *n
     {
         (*col_idx)[index] = csr_ja[index];
     }
-    for(int index = 0; index < n_loc; ++index)
+    for (int index = 0; index < n_loc; ++index)
     {
         // matrix element
         int index_start = csr_ia[index];
         int index_end = csr_ia[index + 1];
-        for(int index_j = index_start; index_j < index_end; ++index_j)
+        for (int index_j = index_start; index_j < index_end; ++index_j)
         {
             PetscScalar val_tmp;
             PetscCall(MatGetValue(solver_mat, loc_row_idx[index], csr_ja[index_j], &val_tmp));

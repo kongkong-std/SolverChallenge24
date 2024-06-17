@@ -365,11 +365,13 @@ int main(int argc, char **argv)
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
             SolverPetscResidualCheck(argc, argv, &mysolver);
+#if 0
             if (myrank == 0)
             {
                 SolverPetscGetLinearSystem(&mysolver, &m, &n, &nnzA,
                                            &row_ptr, &col_idx, &val, &x, &b);
             }
+#endif
         }
         else if (type == 1) // check preprocess + iterative_solver time
         {
@@ -495,6 +497,7 @@ int main(int argc, char **argv)
     // check the memory
     mem_usage();
 
+#if 0
     if (myrank == 0)
     {
 
@@ -553,6 +556,7 @@ int main(int argc, char **argv)
         free(x);
         free(b);
     }
+#endif
 
     MPI_Finalize();
     return 0;
