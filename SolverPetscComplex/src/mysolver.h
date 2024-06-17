@@ -41,6 +41,32 @@ void solve_complex(MySolverComplex *solver, const int n, const double *x, const 
 #endif
 
 #ifdef ITERATIVE_SOLVER
+/*
+ * assigning value to linear system
+ */
+void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver);
+
+/*
+ * solver preprocess
+ */
+void SolverPetscPreprocess(int argc, char **argv, MySolver *mysolver);
+
+/*
+ * solver solve
+ */
+void SolverPetscSolve(int argc, char **argv, MySolver *mysolver);
+
+/*
+ * solver || residual || _ {lp} check
+ */
+void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver);
+
+/*
+ * solver get linear system
+ */
+void SolverPetscGetLinearSystem(const MySolver *mysolver, int *m, int *n, int *nnz,
+                                int **row_ptr, int **col_idx, double **val, double **x, double **b);
+
 //! real system
 void analyse(MySolver *solver, const int n, const int *row_ptr, const int *col_idx);
 

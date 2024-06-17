@@ -4,46 +4,82 @@
 // #define DIRECT_SOLVER
 #define ITERATIVE_SOLVER
 
-// please add your code in this file
-struct MySolver
-{
-};
+#include <petscksp.h>
 
-struct MySolver_complex
+// please add your code in this file
+typedef struct my_solver
 {
-};
+    KSP ksp;
+    PC pc;
+    Mat solver_a;
+    Vec solver_b, solver_x, solver_r; // rhs, solution, residual
+} MySolver;
+
+typedef struct my_solver_complex
+{
+    KSP ksp;
+    PC pc;
+    Mat solver_a;
+    Vec solver_b, solver_x, solver_r; // rhs, solution, residual
+} MySolverComplex;
 
 #ifdef DIRECT_SOLVER
 //! real system
-void preprocess(struct MySolver *solver, const int n, const int *row_ptr, const int *col_idx);
+void preprocess(MySolver *solver, const int n, const int *row_ptr, const int *col_idx);
 
-void direct_solver(struct MySolver *solver, const int n, const double *val);
+void direct_solver(MySolver *solver, const int n, const double *val);
 
-void solve(struct MySolver *solver, const int n, const double *x, const double *b);
+void solve(MySolver *solver, const int n, const double *x, const double *b);
 
 //! complex system
-void preprocess_complex(struct MySolver_complex *solver, const int n, const int *row_ptr, const int *col_idx);
+void preprocess_complex(MySolverComplex *solver, const int n, const int *row_ptr, const int *col_idx);
 
-void direct_solver_complex(struct MySolver_complex *solver, const int n, const double *val, const double *val_im);
+void direct_solver_complex(MySolverComplex *solver, const int n, const double *val, const double *val_im);
 
-void solve_complex(struct MySolver_complex *solver, const int n, const double *x, const double *x_im, const double *b, const double *b_im);
+void solve_complex(MySolverComplex *solver, const int n, const double *x, const double *x_im, const double *b, const double *b_im);
 
 #endif
 
 #ifdef ITERATIVE_SOLVER
+/*
+ * assigning value to linear system
+ */
+void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver);
+
+/*
+ * solver preprocess
+ */
+void SolverPetscPreprocess(int argc, char **argv, MySolver *mysolver);
+
+/*
+ * solver solve
+ */
+void SolverPetscSolve(int argc, char **argv, MySolver *mysolver);
+
+/*
+ * solver || residual || _ {lp} check
+ */
+void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver);
+
+/*
+ * solver get linear system
+ */
+void SolverPetscGetLinearSystem(const MySolver *mysolver, int *m, int *n, int *nnz,
+                                int **row_ptr, int **col_idx, double **val, double **x, double **b);
+
 //! real system
-void analyse(struct MySolver *solver, const int n, const int *row_ptr, const int *col_idx);
+void analyse(MySolver *solver, const int n, const int *row_ptr, const int *col_idx);
 
-void preprocess(struct MySolver *solver, const int n, const double *val);
+void preprocess(MySolver *solver, const int n, const double *val);
 
-void iterative_solver(struct MySolver *solver, const int n, const double *x, const double *b);
+void iterative_solver(MySolver *solver, const int n, const double *x, const double *b);
 
 //! complex system
-void analyse_complex(struct MySolver_complex *solver, const int n, const int *row_ptr, const int *col_idx);
+void analyse_complex(MySolverComplex *solver, const int n, const int *row_ptr, const int *col_idx);
 
-void preprocess_complex(struct MySolver_complex *solver, const int n, const double *val, const double *val_im);
+void preprocess_complex(MySolverComplex *solver, const int n, const double *val, const double *val_im);
 
-void iterative_solver_complex(struct MySolver_complex *solver, const int n, const double *x, const double *x_im, const double *b, const double *b_im);
+void iterative_solver_complex(MySolverComplex *solver, const int n, const double *x, const double *x_im, const double *b, const double *b_im);
 
 #endif
 

@@ -1,4 +1,4 @@
-# makefile for challenge code complex type
+# makefile for challenge code real type
 CC = /online1/public/support/intel/openmpi/4.1.4/gcc10.3.0/bin/mpicc
 SRC = ../src
 
@@ -7,12 +7,12 @@ CMD = -fPIC -Wall -Wwrite-strings -Wno-unknown-pragmas \
 -Wno-lto-type-mismatch -fstack-protector \
 -fvisibility=hidden -g3 -O3
 
-INCL = -I/home/export/base/ycsc_zhaol/qinzk/online1/openblas_software/petsc-3.21.2-openmpi/complex/include \
+INCL = -I/home/export/base/ycsc_zhaol/qinzk/online1/openblas_software/petsc-3.21.2-openmpi/real/include \
 -I/home/export/base/ycsc_zhaol/qinzk/online1/software/solver_lib_include/include \
 -I/online1/public/support/intel/openmpi/4.1.4/gcc10.3.0/include
 
-LIB_PATH = -Wl,-rpath,/home/export/base/ycsc_zhaol/qinzk/online1/openblas_software/petsc-3.21.2-openmpi/complex/lib \
--L/home/export/base/ycsc_zhaol/qinzk/online1/openblas_software/petsc-3.21.2-openmpi/complex/lib \
+LIB_PATH = -Wl,-rpath,/home/export/base/ycsc_zhaol/qinzk/online1/openblas_software/petsc-3.21.2-openmpi/real/lib \
+-L/home/export/base/ycsc_zhaol/qinzk/online1/openblas_software/petsc-3.21.2-openmpi/real/lib \
 -Wl,-rpath,/home/export/base/ycsc_zhaol/qinzk/online1/software/solver_lib_include/lib \
 -L/home/export/base/ycsc_zhaol/qinzk/online1/software/solver_lib_include/lib \
 -Wl,-rpath,/online1/public/support/intel/openmpi/4.1.4/gcc10.3.0/lib \
@@ -35,13 +35,13 @@ OBJECT := $(patsubst %.c,%.o,$(wildcard $(SRC)/*.c))
 
 .PHONY: all clean
 
-all: app_agmg
+all: app_petsc_exe
 
-app_agmg: $(OBJECT)
-	$(CC) $(CMD) $(INCL) -o app_agmg $(OBJECT) $(LIB)
+app_petsc_exe: $(OBJECT)
+	$(CC) $(CMD) $(INCL) -o app_petsc_exe $(OBJECT) $(LIB)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CMD) $(INCL) "$<" -o "$@"
 
 clean:
-	rm app_agmg $(OBJECT)
+	rm app_petsc_exe $(OBJECT)

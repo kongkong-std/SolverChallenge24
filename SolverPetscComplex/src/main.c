@@ -38,19 +38,28 @@ int main(int argc, char **argv)
     char *filename_b;         // the filename of right-hand side vector b
     int read_matrix_base = 1; // 0-base or 1-base, default 1-base
     int type = 0;             // type to output time, 0: end to end time; 1:solver time + solve time; 2:solve time; default 0
-    int test_frequency = 10;  // run code frequency
-    int sys_type = 0;         // type of algebraic systems, 0: real, 1: complex; default 0
+    // int test_frequency = 10;  // run code frequency
+    int test_frequency = 1; // run code frequency
+    int sys_type = 0;       // type of algebraic systems, 0: real, 1: complex; default 0
 
     int myrank, size;
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    for(int index = 0; index < argc; ++index)
+    for (int index = 0; index < argc; ++index)
     {
-        if(strstr("-sys_type", argv[index]))
+        if (strstr("-sys_type", argv[index]))
         {
             sys_type = atoi(argv[index + 1]);
+        }
+        if (strstr("-type", argv[index]))
+        {
+            type = atoi(argv[index + 1]);
+        }
+        if (strstr("-test_frequency", argv[index]))
+        {
+            test_frequency = atoi(argv[index + 1]);
         }
     }
 
@@ -327,26 +336,40 @@ int main(int argc, char **argv)
     {
         // MPI iterative solver sample
         MySolver mysolver;
+        SolverPetscInitialize(argc, argv, &mysolver);
 
         if (type == 0) // check end to end time
         {
             tt = GetCurrentTime();
             for (int i = 0; i < test_frequency; i++)
             {
+#if 0
                 if (myrank == 0)
                 {
                     // Note that calling the iterative method in a loop requires initializing the solution vector to 0 each time
                     memset(x, 0.0, sizeof(double) * n); // initial vector x
                 }
+#endif
                 MPI_Barrier(MPI_COMM_WORLD);
 
+#if 0
                 analyse(&mysolver, n, row_ptr, col_idx);
                 preprocess(&mysolver, n, val);
                 iterative_solver(&mysolver, n, x, b);
+#endif
+
+                SolverPetscPreprocess(argc, argv, &mysolver);
+                SolverPetscSolve(argc, argv, &mysolver);
 
                 MPI_Barrier(MPI_COMM_WORLD);
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
+            SolverPetscResidualCheck(argc, argv, &mysolver);
+            if (myrank == 0)
+            {
+                SolverPetscGetLinearSystem(&mysolver, &m, &n, &nnzA,
+                                           &row_ptr, &col_idx, &val, &x, &b);
+            }
         }
         else if (type == 1) // check preprocess + iterative_solver time
         {
