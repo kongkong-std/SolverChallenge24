@@ -24,7 +24,7 @@ LIB_PATH = -Wl,-rpath,/home/export/base/ycsc_zhaol/qinzk/online1/openblas_softwa
 -Wl,-rpath,/online1/public/support/intel/gcc_compiler/10.3.0/lib \
 -L/online1/public/support/intel/gcc_compiler/10.3.0/lib
 
-LIB_FLAG = -lpetsc -lHYPRE -lzmumps -lmumps_common -lpord \
+LIB_FLAG = -lpetsc -lHYPRE -lzmumps -ldmumps -lsmumps -lcmumps -lmumps_common -lpord \
 -lpthread -lscalapack -lopenblas -lparmetis -lmetis -lm \
 -lX11 -ldl -lmpi_usempif08 -lmpi_usempi_ignore_tkr \
 -lmpi_mpifh -lmpi -lgfortran -lm -lgfortran -lm -lgcc_s \

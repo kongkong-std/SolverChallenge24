@@ -2,6 +2,10 @@
 #define MAIN_H_
 
 #include <petscksp.h>
+#include <mpi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 typedef struct matrix
 {
@@ -13,10 +17,20 @@ typedef struct matrix
 typedef struct vector
 {
     int n;
-    double * val;
+    double *val;
 } Vector;
 
-void MatrixProcess(const char *, Matrix *);
-void VectorProcess(const char *, Vector *);
+/*
+ * matrix size data: m, n, nnz
+ */
+void MatrixProcessSize(const char *, Matrix *);
+
+/*
+ * vector size data: n
+ */
+void VectorProcessSize(const char *, Vector *);
+
+void MatrixProcess(const char *, Matrix *, int, int);
+void VectorProcess(const char *, Vector *, int, int);
 
 #endif
