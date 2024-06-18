@@ -128,7 +128,7 @@ void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver)
 #endif
 
     // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L1-norm: \t|| r || / || b || = %021.16le\n", r_norm_1 / b_norm_1));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "               || b ||_2 = %021.16le\n", b_norm_2));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "            || b ||_2 = %021.16le\n", b_norm_2));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "|| r ||_2 / || b ||_2 = %021.16le\n", r_norm_2 / b_norm_2));
     // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Linfty-norm: \t|| r || / || b || = %021.16le\n", r_norm_infty / b_norm_infty));
 
