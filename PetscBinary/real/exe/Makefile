@@ -28,7 +28,7 @@ OBJECT := $(patsubst %.c,%.o,$(wildcard $(SRC)/*.c))
 
 all: app_petsc_bin
 
-app_agmg: $(OBJECT)
+app_petsc_bin: $(OBJECT)
 	$(CC) $(CMD) $(INCL) -o app_petsc_bin $(OBJECT) $(LIB)
 
 %.o: %.c
