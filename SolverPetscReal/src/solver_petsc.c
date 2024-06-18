@@ -49,8 +49,8 @@ void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "matrix Row = %d, matrix Column = %d\n", m_mat, n_mat));
     MatInfo info_mat;
     PetscCall(MatGetInfo(mysolver->solver_a, MAT_GLOBAL_SUM, &info_mat));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "matrix nz_allocated = %g, matrix nz_used = %g, matrix nz_unneeded = %g\n",
-                          info_mat.nz_allocated, info_mat.nz_used, info_mat.nz_unneeded));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "matrix nz_allocated = %ld, matrix nz_used = %ld, matrix nz_unneeded = %ld\n",
+                          (long)(info_mat.nz_allocated), (long)(info_mat.nz_used), (long)(info_mat.nz_unneeded)));
     int n_vec = 0;
     PetscCall(VecGetSize(mysolver->solver_b, &n_vec));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "vector Row = %d\n", n_vec));
