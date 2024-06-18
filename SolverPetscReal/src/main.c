@@ -495,9 +495,8 @@ int main(int argc, char **argv)
     // Step 3: Check time, memory and correctness
     /* ========================================== */
     // check the memory
-    mem_usage();
+    //mem_usage();
 
-#if 0
     if (myrank == 0)
     {
 
@@ -511,6 +510,8 @@ int main(int argc, char **argv)
         {
             fprintf(stdout, "CHECK end to end time :         %12.6lf ms\n", time);
         }
+    }
+#if 0
         else if (type == 1)
         {
             fprintf(stdout, "CHECK solver + solve time :     %12.6lf ms\n", time);

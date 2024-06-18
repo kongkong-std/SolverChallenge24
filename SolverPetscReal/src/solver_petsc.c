@@ -41,6 +41,19 @@ void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
     // sol vector and residual vector
     PetscCall(VecDuplicate(mysolver->solver_b, &(mysolver->solver_x)));
     PetscCall(VecDuplicate(mysolver->solver_b, &(mysolver->solver_r)));
+
+    // size of matrix
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "==== basic information of linear system ====\n"));
+    int m_mat = 0, n_mat = 0, nnz_mat = 0;
+    PetscCall(MatGetSize(mysolver->solver_a, &m_mat, &n_mat));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "matrix Row = %d, matrix Column = %d\n", m_mat, n_mat));
+    MatInfo info_mat;
+    PetscCall(MatGetInfo(mysolver->solver_a, MAT_GLOBAL_SUM, &info_mat));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "matrix nz_allocated = %g, matrix nz_used = %g, matrix nz_unneeded = %g\n",
+                          info_mat.nz_allocated, info_mat.nz_used, info_mat.nz_unneeded));
+    int n_vec = 0;
+    PetscCall(VecGetSize(mysolver->solver_b, &n_vec));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "vector Row = %d\n", n_vec));
 }
 
 void SolverPetscPreprocess(int argc, char **argv, MySolver *mysolver)
@@ -115,9 +128,8 @@ void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver)
 #endif
 
     // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L1-norm: \t|| r || / || b || = %021.16le\n", r_norm_1 / b_norm_1));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L2-norm: \t|| r || / || b || = %021.16le\n \
-    \t|| b || _ 2 = %021.16le\n",
-                          r_norm_2 / b_norm_2, b_norm_2));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "               || b ||_2 = %021.16le\n", b_norm_2));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "|| r ||_2 / || b ||_2 = %021.16le\n", r_norm_2 / b_norm_2));
     // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Linfty-norm: \t|| r || / || b || = %021.16le\n", r_norm_infty / b_norm_infty));
 
 #if 0
