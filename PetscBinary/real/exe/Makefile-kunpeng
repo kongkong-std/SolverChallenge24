@@ -1,0 +1,51 @@
+# makefile for real petsc binary file
+# module load openmpi/4.1.2_gcc9.3.0
+CC = /workspace/public/software/mpi/openmpi/4.1.2_gcc9.3.0/bin/mpicc
+SRC = ../src
+
+CFLAGS = -c -std=c99
+CMD = -fPIC -Wall -Wwrite-strings -Wno-unknown-pragmas -Wno-lto-type-mismatch \
+-fstack-protector -fvisibility=hidden -g3 -O3
+
+INCL = -I/workspace/home/migration/qinzikang/modify_software/petsc-3.21.2/real/include \
+-I/workspace/home/migration/qinzikang/modify_software/parmetis-4.0.3/include \
+-I/workspace/home/migration/qinzikang/modify_software/metis-5.1.0/include \
+-I/workspace/public/software/mpi/openmpi/4.1.2_gcc9.3.0/include
+
+LIB_PATH = -Wl,-rpath,/workspace/home/migration/qinzikang/modify_software/petsc-3.21.2/real/lib \
+-L/workspace/home/migration/qinzikang/modify_software/petsc-3.21.2/real/lib \
+-Wl,-rpath,/workspace/home/migration/qinzikang/modify_software/parmetis-4.0.3/lib \
+-L/workspace/home/migration/qinzikang/modify_software/parmetis-4.0.3/lib \
+-Wl,-rpath,/workspace/home/migration/qinzikang/modify_software/metis-5.1.0/lib \
+-L/workspace/home/migration/qinzikang/modify_software/metis-5.1.0/lib \
+-Wl,-rpath,/workspace/public/software/mpi/openmpi/4.1.2_gcc9.3.0/lib \
+-L/workspace/public/software/mpi/openmpi/4.1.2_gcc9.3.0/lib \
+-Wl,-rpath,/workspace/public/software/compilers/gcc/9.3.0/lib/gcc/aarch64-unknown-linux-gnu/9.3.0 \
+-L/workspace/public/software/compilers/gcc/9.3.0/lib/gcc/aarch64-unknown-linux-gnu/9.3.0 \
+-Wl,-rpath,/workspace/public/software/compilers/gcc/9.3.0/lib/gcc \
+-L/workspace/public/software/compilers/gcc/9.3.0/lib/gcc \
+-Wl,-rpath,/workspace/public/software/compilers/gcc/9.3.0/lib64 \
+-L/workspace/public/software/compilers/gcc/9.3.0/lib64 \
+-Wl,-rpath,/workspace/public/software/compilers/gcc/9.3.0/lib \
+-L/workspace/public/software/compilers/gcc/9.3.0/lib
+
+LIB_FLAG = -lpetsc -lHYPRE -lzmumps -ldmumps -lsmumps -lcmumps -lmumps_common -lpord \
+-lpthread -lscalapack -lopenblas -lparmetis -lmetis -lm -lX11 -ldl \
+-lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi -lgfortran -lm -lgfortran \
+-lm -lgcc_s -lpthread -lstdc++ -ldl
+
+LIB = $(LIB_PATH) $(LIB_FLAG)
+OBJECT := $(patsubst %.c,%.o,$(wildcard $(SRC)/*.c))
+
+.PHONY: all clean
+
+all: app_petsc_bin
+
+app_petsc_bin: $(OBJECT)
+	$(CC) $(CMD) $(INCL) -o app_petsc_bin $(OBJECT) $(LIB) -fopenmp
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(CMD) $(INCL) "$<" -o "$@"
+
+clean:
+	rm app_petsc_bin $(OBJECT)
