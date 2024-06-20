@@ -52,8 +52,9 @@ void MatrixProcess(const char *path, Matrix *mat, int row_start, int row_end)
 
     for (int index = 0; index < mat->nnz; ++index)
     {
-        int m_tmp = 0;
-        fscanf(fp, "%d%*d%*lf", &m_tmp);
+        int m_tmp = 0, n_tmp = 0;
+        double val_tmp = 0.;
+        fscanf(fp, "%d%d%lf", &m_tmp, &n_tmp, &val_tmp);
         --m_tmp;
         if (m_tmp >= row_start && m_tmp < row_end)
         {
@@ -127,14 +128,14 @@ void VectorProcess(const char *path, Vector *vec, int row_start, int row_end)
 
     int n_tmp = 0;
     fscanf(fp, "%d", &n_tmp);
-    for(int index = 0; index < n_tmp; ++index)
+    for (int index = 0; index < n_tmp; ++index)
     {
         fscanf(fp, "%lf", val_tmp + index);
     }
 
     fclose(fp);
 
-    for(int index = row_start; index < row_end; ++index)
+    for (int index = row_start; index < row_end; ++index)
     {
         vec->val[index - row_start] = val_tmp[index];
     }

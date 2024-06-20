@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 
     double tt, time;
 
-    int type = 0;             // type to output time, 0: end to end time; 1:solver time + solve time; 2:solve time; default 0
+    int type = 0; // type to output time, 0: end to end time; 1:solver time + solve time; 2:solve time; default 0
     // int test_frequency = 10;  // run code frequency
     int test_frequency = 1; // run code frequency
     int sys_type = 0;       // type of algebraic systems, 0: real, 1: complex; default 0
@@ -183,6 +183,7 @@ int main(int argc, char **argv)
         }
     }
 
+    PetscCall(PetscFinalize());
     MPI_Finalize();
     return 0;
 }

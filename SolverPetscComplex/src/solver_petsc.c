@@ -6,6 +6,7 @@ void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
     PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &myrank));
     PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &mysize));
 
+#if 0
     char *path_mat = NULL, *path_rhs = NULL;
 
     for (int index = 0; index < argc; ++index)
@@ -18,6 +19,23 @@ void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
         {
             path_rhs = argv[index + 1];
         }
+    }
+#endif
+
+    char path_mat[PETSC_MAX_PATH_LEN];
+    char path_rhs[PETSC_MAX_PATH_LEN];
+    PetscBool path_flag;
+
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-file_mat", path_mat, sizeof(path_mat), &path_flag));
+    if (path_flag)
+    {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Matrix file: %s\n", path_mat));
+    }
+
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-file_rhs", path_rhs, sizeof(path_rhs), &path_flag));
+    if (path_flag)
+    {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "RHS file: %s\n", path_rhs));
     }
 
     Matrix mat_a;

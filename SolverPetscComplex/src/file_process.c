@@ -53,8 +53,9 @@ void MatrixProcess(const char *path, Matrix *mat, int row_start, int row_end)
 
     for (int index = 0; index < mat->nnz; ++index)
     {
-        int m_tmp = 0;
-        fscanf(fp, "%d%*d%*lf%*lf", &m_tmp);
+        int m_tmp = 0, n_tmp = 0;
+        double val_tmp_re = 0., val_tmp_im = 0.;
+        fscanf(fp, "%d%d%lf%lf", &m_tmp, &n_tmp, &val_tmp_re, &val_tmp_im);
         --m_tmp;
         if (m_tmp >= row_start && m_tmp < row_end)
         {
