@@ -2,13 +2,9 @@
 
 void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
 {
-    PetscMPIInt irank, nproc;
-
-    PetscFunctionBeginUser;
-
-    PetscCall(PetscInitialize(&argc, &argv, (char *)0, NULL));
-    PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &irank));
-    PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &nproc));
+    PetscMPIInt myrank, mysize;
+    PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &myrank));
+    PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &mysize));
 
     char *path_mat = NULL, *path_rhs = NULL;
 
@@ -24,6 +20,67 @@ void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
         }
     }
 
+    Matrix mat_a;
+    Vector rhs_b;
+    MatrixProcessSize(path_mat, &mat_a);
+    VectorProcessSize(path_rhs, &rhs_b);
+    int n_size = rhs_b.n;
+
+    PetscCall(MatCreate(PETSC_COMM_WORLD, &(mysolver->solver_a)));
+    PetscCall(MatSetSizes(mysolver->solver_a, PETSC_DECIDE, PETSC_DECIDE, n_size, n_size));
+    PetscCall(MatSetType(mysolver->solver_a, MATAIJ));
+    PetscCall(MatSetUp(mysolver->solver_a));
+
+    int n_mat_loc_start = 0, n_mat_loc_end = 0;
+    PetscCall(MatGetOwnershipRange(mysolver->solver_a, &n_mat_loc_start, &n_mat_loc_end));
+
+    printf(">>>> In rank %d/%d, matrix file begin to process ...\n", myrank, mysize);
+    MatrixProcess(path_mat, &mat_a, n_mat_loc_start, n_mat_loc_end);
+    printf("==== In rank %d/%d, matrix file has been processed !!!\n", myrank, mysize);
+
+    printf(">>>> In rank %d/%d, petsc matrix begin to assemble ...\n", myrank, mysize);
+    for (int index = 0; index < mat_a.nnz; ++index)
+    {
+        int index_i = mat_a.row_idx[index];
+        int index_j = mat_a.col_idx[index];
+        PetscScalar val_tmp = mat_a.val_re[index] + mat_a.val_im[index] * PETSC_i;
+        PetscCall(MatSetValue(mysolver->solver_a, index_i, index_j, val_tmp, INSERT_VALUES));
+    }
+    PetscCall(MatAssemblyBegin(mysolver->solver_a, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(mysolver->solver_a, MAT_FINAL_ASSEMBLY));
+    printf("==== In rank %d/%d, petsc matrix has been assembled !!!\n", myrank, mysize);
+
+    PetscCall(VecCreate(PETSC_COMM_WORLD, &(mysolver->solver_b)));
+    PetscCall(VecSetType(mysolver->solver_b, VECMPI));
+    PetscCall(VecSetSizes(mysolver->solver_b, PETSC_DECIDE, n_size));
+
+    int n_vec_loc_start = 0, n_vec_loc_end = 0;
+    PetscCall(VecGetOwnershipRange(mysolver->solver_b, &n_vec_loc_start, &n_vec_loc_end));
+
+    printf(">>>> In rank %d/%d, vector file begin to process ...\n", myrank, mysize);
+    VectorProcess(path_rhs, &rhs_b, n_vec_loc_start, n_vec_loc_end);
+    printf("==== In rank %d/%d, vector file has been processed !!!\n", myrank, mysize);
+
+    printf(">>>> In rank %d/%d, petsc vector begin to assemble ...\n", myrank, mysize);
+    for (int index = n_vec_loc_start; index < n_vec_loc_end; ++index)
+    {
+        PetscScalar val_tmp = rhs_b.val_re[index - n_vec_loc_start] + rhs_b.val_im[index - n_vec_loc_start] * PETSC_i;
+        PetscCall(VecSetValues(mysolver->solver_b, 1, &index, &val_tmp, INSERT_VALUES));
+    }
+
+    PetscCall(VecAssemblyBegin(mysolver->solver_b));
+    PetscCall(VecAssemblyEnd(mysolver->solver_b));
+    printf("==== In rank %d/%d, petsc vector has been assembled !!!\n", myrank, mysize);
+
+    // free memory
+    free(mat_a.row_idx);
+    free(mat_a.col_idx);
+    free(mat_a.val_re);
+    free(mat_a.val_im);
+    free(rhs_b.val_re);
+    free(rhs_b.val_im);
+
+#if 0
     PetscViewer fd;
 
     // matrix file
@@ -37,6 +94,7 @@ void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
     PetscCall(VecCreate(PETSC_COMM_WORLD, &(mysolver->solver_b)));
     PetscCall(VecLoad(mysolver->solver_b, fd));
     PetscCall(PetscViewerDestroy(&fd));
+#endif
 
     // sol vector and residual vector
     PetscCall(VecDuplicate(mysolver->solver_b, &(mysolver->solver_x)));
@@ -58,14 +116,7 @@ void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
 
 void SolverPetscPreprocess(int argc, char **argv, MySolver *mysolver)
 {
-    PetscMPIInt irank, nproc;
-
-    PetscFunctionBeginUser;
-
-    PetscCall(PetscInitialize(&argc, &argv, (char *)0, NULL));
-    PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &irank));
-    PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &nproc));
-
+    PetscCall(KSPSetFromOptions(mysolver->ksp));
     PetscCall(KSPCreate(PETSC_COMM_WORLD, &(mysolver->ksp)));
     PetscCall(KSPSetOperators(mysolver->ksp, mysolver->solver_a, mysolver->solver_a));
 
@@ -88,60 +139,22 @@ void SolverPetscPreprocess(int argc, char **argv, MySolver *mysolver)
 
 void SolverPetscSolve(int argc, char **argv, MySolver *mysolver)
 {
-    PetscMPIInt irank, nproc;
-
-    PetscFunctionBeginUser;
-
-    PetscCall(PetscInitialize(&argc, &argv, (char *)0, NULL));
-    PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &irank));
-    PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &nproc));
-
-    PetscCall(KSPSetFromOptions(mysolver->ksp));
     PetscCall(KSPSolve(mysolver->ksp, mysolver->solver_b, mysolver->solver_x));
 }
 
 void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver)
 {
-    PetscMPIInt irank, nproc;
-
-    PetscFunctionBeginUser;
-
-    PetscCall(PetscInitialize(&argc, &argv, (char *)0, NULL));
-    PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &irank));
-    PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &nproc));
-
-    PetscReal b_norm_2 = 0., b_norm_1 = 0., b_norm_infty = 0.;
-    PetscReal r_norm_2 = 0., r_norm_1 = 0., r_norm_infty = 0.;
+    PetscReal b_norm_2 = 0.;
+    PetscReal r_norm_2 = 0.;
 
     PetscCall(VecNorm(mysolver->solver_b, NORM_2, &b_norm_2));
-#if 0
-    PetscCall(VecNorm(mysolver->solver_b, NORM_1, &b_norm_1));
-    PetscCall(VecNorm(mysolver->solver_b, NORM_INFINITY, &b_norm_infty));
-#endif
 
     PetscCall(MatMult(mysolver->solver_a, mysolver->solver_x, mysolver->solver_r));
     PetscCall(VecAXPY(mysolver->solver_r, -1., mysolver->solver_b));
     PetscCall(VecNorm(mysolver->solver_r, NORM_2, &r_norm_2));
-#if 0
-    PetscCall(VecNorm(mysolver->solver_r, NORM_1, &r_norm_1));
-    PetscCall(VecNorm(mysolver->solver_r, NORM_INFINITY, &r_norm_infty));
-#endif
 
-    // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L1-norm: \t|| r || / || b || = %021.16le\n", r_norm_1 / b_norm_1));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "            || b ||_2 = %021.16le\n", b_norm_2));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "|| r ||_2 / || b ||_2 = %021.16le\n", r_norm_2 / b_norm_2));
-    // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Linfty-norm: \t|| r || / || b || = %021.16le\n", r_norm_infty / b_norm_infty));
-
-#if 0
-    PetscViewer fd;                                   /* viewer */
-    char file_x[PETSC_MAX_PATH_LEN] = "solution.txt"; /* name of output file with solution vector */
-    // ierr = PetscOptionsGetString(NULL, NULL, "-f_x", file_x, sizeof(file_x), NULL); CHKERRQ(ierr);
-    PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, file_x, &fd));
-    PetscCall(PetscViewerPushFormat(fd, PETSC_VIEWER_DEFAULT));
-    PetscCall(VecView(mysolver->solver_x, fd));
-    PetscCall(PetscViewerPopFormat(fd));
-    PetscCall(PetscViewerDestroy(&fd));
-#endif
 
     PetscCall(KSPDestroy(&(mysolver->ksp)));
     PetscCall(MatDestroy(&(mysolver->solver_a)));
@@ -150,6 +163,7 @@ void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver)
     PetscCall(VecDestroy(&(mysolver->solver_x)));
 }
 
+#if 0
 void SolverPetscGetLinearSystem(const MySolver *mysolver, int *m, int *n, int *nnz,
                                 int **row_ptr, int **col_idx, double **val, double **x, double **b)
 {
@@ -236,30 +250,4 @@ void SolverPetscGetLinearSystem(const MySolver *mysolver, int *m, int *n, int *n
         (*x)[index] = val_tmp2;
     }
 }
-
-//! real system
-void analyse(MySolver *solver, const int n, const int *row_ptr, const int *col_idx)
-{
-}
-
-void preprocess(MySolver *solver, const int n, const double *val)
-{
-}
-
-void iterative_solver(MySolver *solver, const int n, const double *x, const double *b)
-{
-}
-
-//! complex system
-void analyse_complex(MySolverComplex *solver, const int n, const int *row_ptr, const int *col_idx)
-{
-}
-
-void preprocess_complex(MySolverComplex *solver, const int n, const double *val, const double *val_im)
-{
-}
-
-void iterative_solver_complex(MySolverComplex *solver, const int n, const double *x,
-                              const double *x_im, const double *b, const double *b_im)
-{
-}
+#endif

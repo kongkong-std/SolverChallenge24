@@ -5,7 +5,6 @@
 #define ITERATIVE_SOLVER
 
 #include <petscksp.h>
-#include "file_process.h"
 
 // please add your code in this file
 typedef struct my_solver
@@ -15,6 +14,14 @@ typedef struct my_solver
     Mat solver_a;
     Vec solver_b, solver_x, solver_r; // rhs, solution, residual
 } MySolver;
+
+typedef struct my_solver_complex
+{
+    KSP ksp;
+    PC pc;
+    Mat solver_a;
+    Vec solver_b, solver_x, solver_r; // rhs, solution, residual
+} MySolverComplex;
 
 #ifdef DIRECT_SOLVER
 //! real system
@@ -31,7 +38,7 @@ void direct_solver_complex(MySolverComplex *solver, const int n, const double *v
 
 void solve_complex(MySolverComplex *solver, const int n, const double *x, const double *x_im, const double *b, const double *b_im);
 
-#endif // DIRECT_SOLVER
+#endif
 
 #ifdef ITERATIVE_SOLVER
 /*
@@ -59,6 +66,21 @@ void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver);
  */
 void SolverPetscGetLinearSystem(const MySolver *mysolver, int *m, int *n, int *nnz,
                                 int **row_ptr, int **col_idx, double **val, double **x, double **b);
-#endif // ITERATIVE_SOLVER
 
-#endif // MYSOLVER_H_
+//! real system
+void analyse(MySolver *solver, const int n, const int *row_ptr, const int *col_idx);
+
+void preprocess(MySolver *solver, const int n, const double *val);
+
+void iterative_solver(MySolver *solver, const int n, const double *x, const double *b);
+
+//! complex system
+void analyse_complex(MySolverComplex *solver, const int n, const int *row_ptr, const int *col_idx);
+
+void preprocess_complex(MySolverComplex *solver, const int n, const double *val, const double *val_im);
+
+void iterative_solver_complex(MySolverComplex *solver, const int n, const double *x, const double *x_im, const double *b, const double *b_im);
+
+#endif
+
+#endif
