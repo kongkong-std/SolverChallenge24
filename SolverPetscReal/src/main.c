@@ -44,6 +44,7 @@ int main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
+#if 0
     for (int index = 0; index < argc; ++index)
     {
         if (strstr("-sys_type", argv[index]))
@@ -59,10 +60,28 @@ int main(int argc, char **argv)
             test_frequency = atoi(argv[index + 1]);
         }
     }
+#endif
 
     PetscFunctionBeginUser;
 
     PetscCall(PetscInitialize(&argc, &argv, (char *)0, NULL));
+
+    PetscBool sys_flag;
+    PetscCall(PetscOptionsGetInt(NULL, NULL, "-sys_type", &sys_type, &sys_flag));
+    if (sys_flag)
+    {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "value for sys_type: %d\n", sys_type));
+    }
+    PetscCall(PetscOptionsGetInt(NULL, NULL, "-type", &type, &sys_flag));
+    if (sys_flag)
+    {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "value for type: %d\n", type));
+    }
+    PetscCall(PetscOptionsGetInt(NULL, NULL, "-test_frequency", &test_frequency, &sys_flag));
+    if (sys_flag)
+    {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "value for test_frequency: %d\n", test_frequency));
+    }
 
 /* ========================================== */
 // Step 2: Solve the linear system
@@ -125,7 +144,7 @@ int main(int argc, char **argv)
 #endif // DIRECT_SOLVER
 
 #ifdef ITERATIVE_SOLVER
-    if (sys_type == 0) // real system
+    if (sys_type == 0) // system
     {
         // MPI iterative solver sample
         MySolver mysolver;

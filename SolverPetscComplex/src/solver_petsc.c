@@ -134,9 +134,9 @@ void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
 
 void SolverPetscPreprocess(int argc, char **argv, MySolver *mysolver)
 {
-    PetscCall(KSPSetFromOptions(mysolver->ksp));
     PetscCall(KSPCreate(PETSC_COMM_WORLD, &(mysolver->ksp)));
     PetscCall(KSPSetOperators(mysolver->ksp, mysolver->solver_a, mysolver->solver_a));
+    PetscCall(KSPSetFromOptions(mysolver->ksp));
 
     // pcshell
 #if 0
