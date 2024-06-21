@@ -2,6 +2,7 @@
 
 int main(int argc, char **argv)
 {
+#if 0
     char *path_mat = NULL, *path_rhs = NULL;
     for (int index = 0; index < argc; ++index)
     {
@@ -14,14 +15,48 @@ int main(int argc, char **argv)
             path_rhs = argv[index + 1];
         }
     }
+#endif
 
     Matrix mat_a;
     Vector rhs_b;
-    MatrixProcessSize(path_mat, &mat_a);
-    VectorProcessSize(path_rhs, &rhs_b);
 
     PetscFunctionBeginUser;
     PetscCall(PetscInitialize(&argc, &argv, (char *)0, NULL));
+
+    char path_mat[PETSC_MAX_PATH_LEN];
+    char path_rhs[PETSC_MAX_PATH_LEN];
+
+    PetscBool path_flag;
+
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-file_mat", path_mat, sizeof(path_mat), &path_flag));
+    if (path_flag)
+    {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Matrix file: %s\n", path_mat));
+    }
+
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-file_rhs", path_rhs, sizeof(path_rhs), &path_flag));
+    if (path_flag)
+    {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "RHS file: %s\n", path_rhs));
+    }
+
+    MatrixProcessSize(path_mat, &mat_a);
+    VectorProcessSize(path_rhs, &rhs_b);
+
+    char dst_mat[PETSC_MAX_PATH_LEN]; // dst matrix file
+    char dst_rhs[PETSC_MAX_PATH_LEN]; // dst vector file
+
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-dst_mat", dst_mat, sizeof(dst_mat), &path_flag));
+    if (path_flag)
+    {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "PETSc Binary Matrix file: %s\n", dst_mat));
+    }
+
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-dst_rhs", dst_rhs, sizeof(dst_rhs), &path_flag));
+    if (path_flag)
+    {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "PETSc Binary RHS file: %s\n", dst_rhs));
+    }
 
     Mat solver_mat;
     Vec solver_rhs;
@@ -82,12 +117,12 @@ int main(int argc, char **argv)
 
 #if 1
     PetscViewer fd;
-    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "petsc_bin_mat", FILE_MODE_WRITE, &fd));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, dst_mat, FILE_MODE_WRITE, &fd));
     PetscCall(MatView(solver_mat, fd));
     PetscCall(PetscViewerPopFormat(fd));
     PetscCall(PetscViewerDestroy(&fd));
 
-    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "petsc_bin_rhs", FILE_MODE_WRITE, &fd));
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, dst_rhs, FILE_MODE_WRITE, &fd));
     PetscCall(VecView(solver_rhs, fd));
     PetscCall(PetscViewerPopFormat(fd));
     PetscCall(PetscViewerDestroy(&fd));
@@ -109,5 +144,6 @@ int main(int argc, char **argv)
 }
 
 /*
- * mpirun -np <np> ./app_agmg -mat ../input/real_mat.txt -rhs ../input/real_rhs.txt
+ * mpirun -np <np> ./app_petsc_bin -file_mat ../input/_mat.txt -file_rhs ../input/_rhs.txt
+ *                                 -dst_mat <mat file> -dst_rhs <rhs file>
  */

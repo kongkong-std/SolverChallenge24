@@ -52,8 +52,9 @@ void MatrixProcess(const char *path, Matrix *mat, int row_start, int row_end)
 
     for (int index = 0; index < mat->nnz; ++index)
     {
-        int m_tmp = 0;
-        fscanf(fp, "%d%*d%*lf", &m_tmp);
+        int m_tmp = 0, n_tmp = 0;
+        double val_tmp = 0.;
+        fscanf(fp, "%d%d%lf", &m_tmp, &n_tmp, &val_tmp);
         --m_tmp;
         if (m_tmp >= row_start && m_tmp < row_end)
         {
@@ -103,59 +104,6 @@ void MatrixProcess(const char *path, Matrix *mat, int row_start, int row_end)
 
     // updating nnz to local nnz
     mat->nnz = nnz_loc;
-
-#if 0
-    MPI_File fh;
-    MPI_Status status;
-    MPI_Offset file_size;
-
-    MPI_File_open(MPI_COMM_WORLD, path, MPI_MODE_RDONLY, MPI_INFO_NULL, &fh);
-    MPI_File_get_size(fh, &file_size);
-
-    char *buffer = (char *)malloc(file_size * sizeof(char));
-    MPI_File_read_at_all(fh, 0, buffer, file_size, MPI_CHAR, &status);
-    MPI_File_close(&fh);
-
-    char *ptr = buffer;
-    // Skip the first two lines
-    ptr = strstr(ptr, "\n") + 1;
-    ptr = strstr(ptr, "\n") + 1;
-
-    int m, n, nnz;
-    sscanf(ptr, "%d %d %d", &m, &n, &nnz);
-    ptr = strstr(ptr, "\n") + 1;
-
-    int rank, size;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-    int local_nnz = nnz / size;
-    int remainder = nnz % size;
-    if (rank < remainder)
-    {
-        local_nnz++;
-    }
-
-    mat->m = m;
-    mat->n = n;
-    mat->nnz = local_nnz;
-
-    mat->row_idx = (int *)malloc(local_nnz * sizeof(int));
-    mat->col_idx = (int *)malloc(local_nnz * sizeof(int));
-    mat->val = (double *)malloc(local_nnz * sizeof(double));
-
-    // Skip data for other processes and read data for this process
-    for (int i = 0; i < rank * local_nnz; ++i)
-    {
-        ptr = strstr(ptr, "\n") + 1;
-    }
-    for (int index = 0; index < local_nnz; ++index)
-    {
-        sscanf(ptr, "%d %d %lf", &mat->row_idx[index], &mat->col_idx[index], &mat->val[index]);
-        ptr = strstr(ptr, "\n") + 1;
-    }
-
-    free(buffer);
-#endif
 }
 
 void VectorProcess(const char *path, Vector *vec, int row_start, int row_end)
@@ -180,14 +128,14 @@ void VectorProcess(const char *path, Vector *vec, int row_start, int row_end)
 
     int n_tmp = 0;
     fscanf(fp, "%d", &n_tmp);
-    for(int index = 0; index < n_tmp; ++index)
+    for (int index = 0; index < n_tmp; ++index)
     {
         fscanf(fp, "%lf", val_tmp + index);
     }
 
     fclose(fp);
 
-    for(int index = row_start; index < row_end; ++index)
+    for (int index = row_start; index < row_end; ++index)
     {
         vec->val[index - row_start] = val_tmp[index];
     }
@@ -197,48 +145,4 @@ void VectorProcess(const char *path, Vector *vec, int row_start, int row_end)
 
     // free memory
     free(val_tmp);
-
-#if 0
-    MPI_File fh;
-    MPI_Status status;
-    MPI_Offset file_size;
-
-    MPI_File_open(MPI_COMM_WORLD, path, MPI_MODE_RDONLY, MPI_INFO_NULL, &fh);
-    MPI_File_get_size(fh, &file_size);
-
-    char *buffer = (char *)malloc(file_size * sizeof(char));
-    MPI_File_read_at_all(fh, 0, buffer, file_size, MPI_CHAR, &status);
-    MPI_File_close(&fh);
-
-    char *ptr = buffer;
-
-    int n;
-    sscanf(ptr, "%d", &n);
-    ptr = strstr(ptr, "\n") + 1;
-
-    int rank, size;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-    int local_n = n / size;
-    int remainder = n % size;
-    if (rank < remainder)
-    {
-        local_n++;
-    }
-
-    vec->n = local_n;
-    vec->val = (double *)malloc(local_n * sizeof(double));
-
-    for (int i = 0; i < rank * local_n; ++i)
-    {
-        ptr = strstr(ptr, "\n") + 1;
-    }
-    for (int index = 0; index < local_n; ++index)
-    {
-        sscanf(ptr, "%lf", &vec->val[index]);
-        ptr = strstr(ptr, "\n") + 1;
-    }
-
-    free(buffer);
-#endif
 }

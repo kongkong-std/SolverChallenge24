@@ -2,14 +2,11 @@
 
 void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
 {
-    PetscMPIInt irank, nproc;
+    PetscMPIInt myrank, mysize;
+    PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &myrank));
+    PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &mysize));
 
-    PetscFunctionBeginUser;
-
-    PetscCall(PetscInitialize(&argc, &argv, (char *)0, NULL));
-    PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &irank));
-    PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &nproc));
-
+#if 0
     char *path_mat = NULL, *path_rhs = NULL;
 
     for (int index = 0; index < argc; ++index)
@@ -22,6 +19,23 @@ void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
         {
             path_rhs = argv[index + 1];
         }
+    }
+#endif
+
+    char path_mat[PETSC_MAX_PATH_LEN];
+    char path_rhs[PETSC_MAX_PATH_LEN];
+    PetscBool path_flag;
+
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-file_mat", path_mat, sizeof(path_mat), &path_flag));
+    if (path_flag)
+    {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Matrix file: %s\n", path_mat));
+    }
+
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-file_rhs", path_rhs, sizeof(path_rhs), &path_flag));
+    if (path_flag)
+    {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "RHS file: %s\n", path_rhs));
     }
 
     PetscViewer fd;
@@ -58,16 +72,9 @@ void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
 
 void SolverPetscPreprocess(int argc, char **argv, MySolver *mysolver)
 {
-    PetscMPIInt irank, nproc;
-
-    PetscFunctionBeginUser;
-
-    PetscCall(PetscInitialize(&argc, &argv, (char *)0, NULL));
-    PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &irank));
-    PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &nproc));
-
     PetscCall(KSPCreate(PETSC_COMM_WORLD, &(mysolver->ksp)));
     PetscCall(KSPSetOperators(mysolver->ksp, mysolver->solver_a, mysolver->solver_a));
+    PetscCall(KSPSetFromOptions(mysolver->ksp));
 
     // pcshell
 #if 0
@@ -88,60 +95,22 @@ void SolverPetscPreprocess(int argc, char **argv, MySolver *mysolver)
 
 void SolverPetscSolve(int argc, char **argv, MySolver *mysolver)
 {
-    PetscMPIInt irank, nproc;
-
-    PetscFunctionBeginUser;
-
-    PetscCall(PetscInitialize(&argc, &argv, (char *)0, NULL));
-    PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &irank));
-    PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &nproc));
-
-    PetscCall(KSPSetFromOptions(mysolver->ksp));
     PetscCall(KSPSolve(mysolver->ksp, mysolver->solver_b, mysolver->solver_x));
 }
 
 void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver)
 {
-    PetscMPIInt irank, nproc;
-
-    PetscFunctionBeginUser;
-
-    PetscCall(PetscInitialize(&argc, &argv, (char *)0, NULL));
-    PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &irank));
-    PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &nproc));
-
-    PetscReal b_norm_2 = 0., b_norm_1 = 0., b_norm_infty = 0.;
-    PetscReal r_norm_2 = 0., r_norm_1 = 0., r_norm_infty = 0.;
+    PetscReal b_norm_2 = 0.;
+    PetscReal r_norm_2 = 0.;
 
     PetscCall(VecNorm(mysolver->solver_b, NORM_2, &b_norm_2));
-#if 0
-    PetscCall(VecNorm(mysolver->solver_b, NORM_1, &b_norm_1));
-    PetscCall(VecNorm(mysolver->solver_b, NORM_INFINITY, &b_norm_infty));
-#endif
 
     PetscCall(MatMult(mysolver->solver_a, mysolver->solver_x, mysolver->solver_r));
     PetscCall(VecAXPY(mysolver->solver_r, -1., mysolver->solver_b));
     PetscCall(VecNorm(mysolver->solver_r, NORM_2, &r_norm_2));
-#if 0
-    PetscCall(VecNorm(mysolver->solver_r, NORM_1, &r_norm_1));
-    PetscCall(VecNorm(mysolver->solver_r, NORM_INFINITY, &r_norm_infty));
-#endif
 
-    // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "L1-norm: \t|| r || / || b || = %021.16le\n", r_norm_1 / b_norm_1));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "            || b ||_2 = %021.16le\n", b_norm_2));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "|| r ||_2 / || b ||_2 = %021.16le\n", r_norm_2 / b_norm_2));
-    // PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Linfty-norm: \t|| r || / || b || = %021.16le\n", r_norm_infty / b_norm_infty));
-
-#if 0
-    PetscViewer fd;                                   /* viewer */
-    char file_x[PETSC_MAX_PATH_LEN] = "solution.txt"; /* name of output file with solution vector */
-    // ierr = PetscOptionsGetString(NULL, NULL, "-f_x", file_x, sizeof(file_x), NULL); CHKERRQ(ierr);
-    PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, file_x, &fd));
-    PetscCall(PetscViewerPushFormat(fd, PETSC_VIEWER_DEFAULT));
-    PetscCall(VecView(mysolver->solver_x, fd));
-    PetscCall(PetscViewerPopFormat(fd));
-    PetscCall(PetscViewerDestroy(&fd));
-#endif
 
     PetscCall(KSPDestroy(&(mysolver->ksp)));
     PetscCall(MatDestroy(&(mysolver->solver_a)));
@@ -150,6 +119,7 @@ void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver)
     PetscCall(VecDestroy(&(mysolver->solver_x)));
 }
 
+#if 0
 void SolverPetscGetLinearSystem(const MySolver *mysolver, int *m, int *n, int *nnz,
                                 int **row_ptr, int **col_idx, double **val, double **x, double **b)
 {
@@ -236,30 +206,4 @@ void SolverPetscGetLinearSystem(const MySolver *mysolver, int *m, int *n, int *n
         (*x)[index] = val_tmp2;
     }
 }
-
-//! real system
-void analyse(MySolver *solver, const int n, const int *row_ptr, const int *col_idx)
-{
-}
-
-void preprocess(MySolver *solver, const int n, const double *val)
-{
-}
-
-void iterative_solver(MySolver *solver, const int n, const double *x, const double *b)
-{
-}
-
-//! complex system
-void analyse_complex(MySolverComplex *solver, const int n, const int *row_ptr, const int *col_idx)
-{
-}
-
-void preprocess_complex(MySolverComplex *solver, const int n, const double *val, const double *val_im)
-{
-}
-
-void iterative_solver_complex(MySolverComplex *solver, const int n, const double *x,
-                              const double *x_im, const double *b, const double *b_im)
-{
-}
+#endif
