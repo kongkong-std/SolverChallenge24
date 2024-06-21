@@ -1,4 +1,5 @@
 # makefile for challenge code real type
+# module load intel/openmpi/4.1.4/gcc10.3.0
 CC = /online1/public/support/intel/openmpi/4.1.4/gcc10.3.0/bin/mpicc
 SRC = ../src
 
@@ -38,7 +39,7 @@ OBJECT := $(patsubst %.c,%.o,$(wildcard $(SRC)/*.c))
 all: app_petsc_exe
 
 app_petsc_exe: $(OBJECT)
-	$(CC) $(CMD) $(INCL) -o app_petsc_exe $(OBJECT) $(LIB)
+	$(CC) $(CMD) $(INCL) -o app_petsc_exe $(OBJECT) $(LIB) -fopenmp
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CMD) $(INCL) "$<" -o "$@"
