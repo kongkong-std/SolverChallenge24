@@ -1,0 +1,73 @@
+# makefile for challenge code complex type
+# module load intel/intel_compiler/2020u4
+# module load intel/openmpi/4.0.4/intel2020u4_serial
+# module load intel/gcc_compiler/10.3.0
+CC = /online1/public/support/intel/openmpi/4.0.4/intel2020u4_serial/bin/mpicc
+SRC = ../src
+
+CFLAGS = -c -std=c99 -qopenmp
+CMD = -fPIC -wd1572 -Wno-unknown-pragmas -g -O3
+
+INCL = -I/home/export/base/ycsc_zhaol/qinzk/online1/icc-software/petsc-3.21.2/complex/include \
+-I/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/mkl/include \
+-I/home/export/base/ycsc_zhaol/qinzk/online1/icc-software/parmetis-4.0.3/include \
+-I/home/export/base/ycsc_zhaol/qinzk/online1/icc-software/metis-5.1.0/include \
+-I/online1/public/support/intel/openmpi/4.0.4/intel2020u4_serial/include
+
+LIB_PATH = -Wl,-rpath,/home/export/base/ycsc_zhaol/qinzk/online1/icc-software/petsc-3.21.2/complex/lib \
+-L/home/export/base/ycsc_zhaol/qinzk/online1/icc-software/petsc-3.21.2/complex/lib \
+-Wl,-rpath,/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/mkl/lib/intel64_lin \
+-L/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/mkl/lib/intel64_lin \
+-Wl,-rpath,/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/mkl/lib/intel64 \
+-L/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/mkl/lib/intel64 \
+-Wl,-rpath,/home/export/base/ycsc_zhaol/qinzk/online1/icc-software/parmetis-4.0.3/lib \
+-L/home/export/base/ycsc_zhaol/qinzk/online1/icc-software/parmetis-4.0.3/lib \
+-Wl,-rpath,/home/export/base/ycsc_zhaol/qinzk/online1/icc-software/metis-5.1.0/lib \
+-L/home/export/base/ycsc_zhaol/qinzk/online1/icc-software/metis-5.1.0/lib \
+-Wl,-rpath,/online1/public/support/intel/openmpi/4.0.4/intel2020u4_serial/lib \
+-L/online1/public/support/intel/openmpi/4.0.4/intel2020u4_serial/lib \
+-Wl,-rpath,/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/mpi/intel64/libfabric/lib \
+-L/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/mpi/intel64/libfabric/lib \
+-Wl,-rpath,/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/ipp/lib/intel64 \
+-L/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/ipp/lib/intel64 \
+-Wl,-rpath,/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/compiler/lib/intel64_lin \
+-L/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/compiler/lib/intel64_lin \
+-Wl,-rpath,/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/tbb/lib/intel64/gcc4.8 \
+-L/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/tbb/lib/intel64/gcc4.8 \
+-Wl,-rpath,/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/daal/lib/intel64_lin \
+-L/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/daal/lib/intel64_lin \
+-Wl,-rpath,/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/tbb/lib/intel64_lin/gcc4.4 \
+-L/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/tbb/lib/intel64_lin/gcc4.4 \
+-Wl,-rpath,/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/tbb/lib/intel64_lin/gcc4.8 \
+-L/online1/public/support/intel/intel_compiler/2020u4/compilers_and_libraries_2020.4.304/linux/tbb/lib/intel64_lin/gcc4.8 \
+-Wl,-rpath,/online1/public/support/intel/gcc_compiler/10.3.0/lib/gcc/x86_64-pc-linux-gnu/10.3.0 \
+-L/online1/public/support/intel/gcc_compiler/10.3.0/lib/gcc/x86_64-pc-linux-gnu/10.3.0 \
+-Wl,-rpath,/online1/public/support/intel/gcc_compiler/10.3.0/lib64 \
+-L/online1/public/support/intel/gcc_compiler/10.3.0/lib64 \
+-Wl,-rpath,/online1/public/support/intel/gcc_compiler/10.3.0/lib \
+-L/online1/public/support/intel/gcc_compiler/10.3.0/lib
+
+LIB_FLAG = -lpetsc -lHYPRE -lzmumps -ldmumps -lsmumps -lcmumps -lmumps_common -lpord \
+-lpthread -lmkl_scalapack_lp64 -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -lmkl_blacs_openmpi_lp64 \
+-liomp5 -ldl -lpthread -lparmetis -lmetis -lX11 \
+-lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi -lifport -lifcoremt -limf -lsvml \
+-lm -lipgo -lirc -lpthread -lgcc_s -lirc_s -ldl -lmpi -limf -lsvml -lirng -lstdc++ \
+-lm -lipgo -ldecimal -lcilkrts -lgcc_s -lirc -lpthread -lirc_s -ldl -lquadmath \
+-lmpi -limf -lsvml -lirng -lstdc++ -lm -lipgo -ldecimal -lcilkrts -lgcc_s -lirc \
+-lpthread -lirc_s -ldl
+
+LIB = $(LIB_PATH) $(LIB_FLAG)
+OBJECT := $(patsubst %.c,%.o,$(wildcard $(SRC)/*.c))
+
+.PHONY: all clean
+
+all: app_petsc_exe
+
+app_petsc_exe: $(OBJECT)
+	$(CC) $(CMD) $(INCL) -o app_petsc_exe $(OBJECT) $(LIB) -qopenmp -Wl,-export-dynamic
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(CMD) $(INCL) "$<" -o "$@"
+
+clean:
+	rm app_petsc_exe $(OBJECT)
