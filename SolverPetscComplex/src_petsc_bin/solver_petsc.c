@@ -1,4 +1,5 @@
 #include "mysolver.h"
+#include "solver_pcshell.h"
 
 void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
 {
@@ -72,8 +73,58 @@ void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
 
 void SolverPetscPreprocess(int argc, char **argv, MySolver *mysolver)
 {
+#ifdef CHALLENGE_06
+    Mat solver_pc;
+    PetscReal shift_pc = 0.;
+    PetscBool shift_flag;
+    PetscCall(PetscOptionsGetReal(NULL, NULL, "-shift_pc", &shift_pc, &shift_flag));
+    if (shift_flag)
+    {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "shift of preconditioner is %021.16le\n", shift_pc));
+    }
+
+    PetscCall(MatDuplicate(mysolver->solver_a, MAT_COPY_VALUES, &solver_pc));
+#endif // CHALLENGE_06
+
     PetscCall(KSPCreate(PETSC_COMM_WORLD, &(mysolver->ksp)));
+
+#ifdef CHALLENGE_06
+    PetscBool done = PETSC_TRUE;
+    const PetscInt *csr_ia = NULL;
+    const PetscInt *csr_ja = NULL;
+    PetscInt loc_row_start = 0, loc_row_end = 0;
+    PetscInt n_loc;
+
+    PetscCall(MatGetRowIJ(solver_pc, 0, PETSC_FALSE, PETSC_TRUE,
+                          &n_loc, &csr_ia, &csr_ja, &done));
+    PetscCall(MatGetOwnershipRange(solver_pc, &loc_row_start, &loc_row_end));
+
+    for (int index = loc_row_start; index < loc_row_end; ++index)
+    {
+        int index_start = csr_ia[index - loc_row_start];
+        int index_end = csr_ia[index - loc_row_start + 1];
+        for (int index_j = index_start; index_j < index_end; ++index_j)
+        {
+            PetscScalar val_tmp;
+            PetscReal val_tmp_re, val_tmp_im;
+            PetscCall(MatGetValue(solver_pc, index, csr_ja[index_j], &val_tmp));
+            val_tmp_re = PetscRealPart(val_tmp);
+            val_tmp_im = PetscImaginaryPart(val_tmp);
+            val_tmp_im += shift_pc * val_tmp_im;
+
+            val_tmp = val_tmp_re + val_tmp_im * PETSC_i;
+            PetscCall(MatSetValue(solver_pc, index, csr_ja[index_j], val_tmp, INSERT_VALUES));
+        }
+    }
+
+    PetscCall(MatAssemblyBegin(solver_pc, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(solver_pc, MAT_FINAL_ASSEMBLY));
+
+    PetscCall(KSPSetOperators(mysolver->ksp, mysolver->solver_a, solver_pc));
+    PetscCall(KSPGetPC(mysolver->ksp, &(mysolver->pc)));
+#elif
     PetscCall(KSPSetOperators(mysolver->ksp, mysolver->solver_a, mysolver->solver_a));
+#endif
     PetscCall(KSPSetFromOptions(mysolver->ksp));
 
     // pcshell
