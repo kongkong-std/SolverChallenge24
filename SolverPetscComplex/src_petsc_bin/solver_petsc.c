@@ -1,6 +1,128 @@
 #include "mysolver.h"
 #include "solver_pcshell.h"
 
+#ifdef CHALLENGE_06
+void SolverRealPartMatrix(const Mat *mat, Mat *mat_re)
+{
+    PetscInt row_loc = 0, col_loc = 0;
+    PetscCall(MatGetLocalSize(*mat, &row_loc, &col_loc));
+
+    PetscBool done = PETSC_TRUE;
+    const PetscInt *csr_ia = NULL;
+    const PetscInt *csr_ja = NULL;
+    PetscInt loc_row_start = 0, loc_row_end = 0;
+    PetscCall(MatGetRowIJ(*mat, 0, PETSC_FALSE, PETSC_TRUE, NULL, &csr_ia, &csr_ja, &done));
+    PetscCall(MatGetOwnershipRange(*mat, &loc_row_start, &loc_row_end));
+
+    PetscCall(MatCreate(PETSC_COMM_WORLD, mat_re));
+    PetscCall(MatSetSizes(*mat_re, row_loc, col_loc, PETSC_DETERMINE, PETSC_DETERMINE));
+    PetscCall(MatSetType(*mat_re, MATAIJ));
+    PetscCall(MatSetUp(*mat_re));
+
+    for (int index = loc_row_start; index < loc_row_end; ++index)
+    {
+        int index_start = csr_ia[index - loc_row_start];
+        int index_end = csr_ia[index - loc_row_start + 1];
+        for (int index_j = index_start; index_j < index_end; ++index_j)
+        {
+            PetscScalar val_tmp;
+            PetscCall(MatGetValue(*mat, index, csr_ja[index_j], &val_tmp));
+
+            PetscScalar val_tmp_re = PetscRealPart(val_tmp);
+            PetscCall(MatSetValues(*mat_re, 1, &index, 1, csr_ja + index_j, &val_tmp_re, INSERT_VALUES));
+        }
+    }
+
+    PetscCall(MatAssemblyBegin(*mat_re, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(*mat_re, MAT_FINAL_ASSEMBLY));
+}
+
+void SolverImaginaryPartMatrix(const Mat *mat, Mat *mat_im)
+{
+    PetscInt row_loc = 0, col_loc = 0;
+    PetscCall(MatGetLocalSize(*mat, &row_loc, &col_loc));
+
+    PetscBool done = PETSC_TRUE;
+    const PetscInt *csr_ia = NULL;
+    const PetscInt *csr_ja = NULL;
+    PetscInt loc_row_start = 0, loc_row_end = 0;
+    PetscCall(MatGetRowIJ(*mat, 0, PETSC_FALSE, PETSC_TRUE, NULL, &csr_ia, &csr_ja, &done));
+    PetscCall(MatGetOwnershipRange(*mat, &loc_row_start, &loc_row_end));
+
+    PetscCall(MatCreate(PETSC_COMM_WORLD, mat_im));
+    PetscCall(MatSetSizes(*mat_im, row_loc, col_loc, PETSC_DETERMINE, PETSC_DETERMINE));
+    PetscCall(MatSetType(*mat_im, MATAIJ));
+    PetscCall(MatSetUp(*mat_im));
+
+    for (int index = loc_row_start; index < loc_row_end; ++index)
+    {
+        int index_start = csr_ia[index - loc_row_start];
+        int index_end = csr_ia[index - loc_row_start + 1];
+        for (int index_j = index_start; index_j < index_end; ++index_j)
+        {
+            PetscScalar val_tmp;
+            PetscCall(MatGetValue(*mat, index, csr_ja[index_j], &val_tmp));
+
+            PetscScalar val_tmp_im = PetscImaginaryPart(val_tmp);
+            PetscCall(MatSetValues(*mat_im, 1, &index, 1, csr_ja + index_j, &val_tmp_im, INSERT_VALUES));
+        }
+    }
+
+    PetscCall(MatAssemblyBegin(*mat_im, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(*mat_im, MAT_FINAL_ASSEMBLY));
+}
+
+void SoverRealPartVector(const Vec *vec, Vec *vec_re)
+{
+    PetscInt row_loc = 0;
+    PetscCall(VecGetLocalSize(*vec, &row_loc));
+
+    PetscInt loc_row_start = 0, loc_row_end = 0;
+    PetscCall(VecGetOwnershipRange(*vec, &loc_row_start, &loc_row_end));
+
+    PetscCall(VecCreate(PETSC_COMM_WORLD, vec_re));
+    PetscCall(VecSetSizes(*vec_re, row_loc, PETSC_DETERMINE));
+    PetscCall(VecSetUp(*vec_re));
+
+    for (int index = loc_row_start; index < loc_row_end; ++index)
+    {
+        PetscScalar val_tmp;
+        PetscCall(VecGetValues(*vec, 1, &index, &val_tmp));
+
+        PetscScalar val_tmp_re = PetscRealPart(val_tmp);
+        PetscCall(VecSetValues(*vec_re, 1, &index, &val_tmp_re, INSERT_VALUES));
+    }
+
+    PetscCall(VecAssemblyBegin(*vec_re));
+    PetscCall(VecAssemblyEnd(*vec_re));
+}
+
+void SolverImaginaryPartVector(const Vec *vec, Vec *vec_im)
+{
+    PetscInt row_loc = 0;
+    PetscCall(VecGetLocalSize(*vec, &row_loc));
+
+    PetscInt loc_row_start = 0, loc_row_end = 0;
+    PetscCall(VecGetOwnershipRange(*vec, &loc_row_start, &loc_row_end));
+
+    PetscCall(VecCreate(PETSC_COMM_WORLD, vec_im));
+    PetscCall(VecSetSizes(*vec_im, row_loc, PETSC_DETERMINE));
+    PetscCall(VecSetUp(*vec_im));
+
+    for (int index = loc_row_start; index < loc_row_end; ++index)
+    {
+        PetscScalar val_tmp;
+        PetscCall(VecGetValues(*vec, 1, &index, &val_tmp));
+
+        PetscScalar val_tmp_im = PetscImaginaryPart(val_tmp);
+        PetscCall(VecSetValues(*vec_im, 1, &index, &val_tmp_im, INSERT_VALUES));
+    }
+
+    PetscCall(VecAssemblyBegin(*vec_im));
+    PetscCall(VecAssemblyEnd(*vec_im));
+}
+#endif // CHALLENGE_06
+
 void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
 {
     PetscMPIInt myrank, mysize;
@@ -69,59 +191,76 @@ void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
     int n_vec = 0;
     PetscCall(VecGetSize(mysolver->solver_b, &n_vec));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "vector Row = %d\n", n_vec));
+
+#ifdef CHALLENGE_06
+    SolverRealPartMatrix(&(mysolver->solver_a), &(mysolver->solver_a_re));
+    SolverImaginaryPartMatrix(&(mysolver->solver_a), &(mysolver->solver_a_im));
+    SolverRealPartVector(&(mysolver->solver_b), &(mysolver->solver_b_re));
+    SolverImaginaryPartVector(&(mysolver->solver_b), &(mysolver->solver_b_im));
+    SolverRealPartVector(&(mysolver->solver_x), &(mysolver->solver_x_re));
+    SolverImaginaryPartVector(&(mysolver->solver_x), &(mysolver->solver_x_im));
+    SolverRealPartVector(&(mysolver->solver_r), &(mysolver->solver_r_re));
+    SolverImaginaryPartVector(&(mysolver->solver_r), &(mysolver->solver_r_im));
+
+    PetscCall(MatDuplicate(mysolver->solver_a_im, MAT_DO_NOT_COPY_VALUES, &(mysolver->solver_a_im_oppo)));
+    PetscCall(MatAXPY(mysolver->solver_a_im_oppo, -1., mysolver->solver_a_im, SAME_NONZERO_PATTERN));
+
+    Mat mat_array[4] = {mysolver->solver_a_re, mysolver->solver_a_im_oppo, mysolver->solver_a_im, mysolver->solver_a_re};
+    PetscCall(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, mat_array, &(mysolver->solver_block_a)));
+
+    Vec rhs_vec_array[2] = {mysolver->solver_b_re, mysolver->solver_b_im};
+    Vec sol_vec_array[2] = {mysolver->solver_x_re, mysolver->solver_x_im};
+    Vec res_vec_array[2] = {mysolver->solver_r_re, mysolver->solver_r_im};
+
+    PetscCall(VecCreateNest(PETSC_COMM_WORLD, 2, NULL, rhs_vec_array, &(mysolver->solver_block_b)));
+    PetscCall(VecCreateNest(PETSC_COMM_WORLD, 2, NULL, sol_vec_array, &(mysolver->solver_block_x)));
+    PetscCall(VecCreateNest(PETSC_COMM_WORLD, 2, NULL, res_vec_array, &(mysolver->solver_block_r)));
+#endif // CHALLENGE_06
 }
 
 void SolverPetscPreprocess(int argc, char **argv, MySolver *mysolver)
 {
+    PetscCall(KSPCreate(PETSC_COMM_WORLD, &(mysolver->ksp)));
 #ifdef CHALLENGE_06
-    Mat solver_pc;
-    PetscReal shift_pc = 0.;
+    PetscReal shift_pc_re = 0., shift_pc_im = 0.;
     PetscBool shift_flag;
-    PetscCall(PetscOptionsGetReal(NULL, NULL, "-shift_pc", &shift_pc, &shift_flag));
+    PetscCall(PetscOptionsGetReal(NULL, NULL, "-shift_pc_re", &shift_pc_re, &shift_flag));
     if (shift_flag)
     {
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "shift of preconditioner is %021.16le\n", shift_pc));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "value for shift of preconditioner: %021.16le\n", shift_pc_re));
     }
-
-    PetscCall(MatDuplicate(mysolver->solver_a, MAT_COPY_VALUES, &solver_pc));
-#endif // CHALLENGE_06
-
-    PetscCall(KSPCreate(PETSC_COMM_WORLD, &(mysolver->ksp)));
-
-#ifdef CHALLENGE_06
-    PetscBool done = PETSC_TRUE;
-    const PetscInt *csr_ia = NULL;
-    const PetscInt *csr_ja = NULL;
-    PetscInt loc_row_start = 0, loc_row_end = 0;
-    PetscInt n_loc;
-
-    PetscCall(MatGetRowIJ(solver_pc, 0, PETSC_FALSE, PETSC_TRUE,
-                          &n_loc, &csr_ia, &csr_ja, &done));
-    PetscCall(MatGetOwnershipRange(solver_pc, &loc_row_start, &loc_row_end));
-
-    for (int index = loc_row_start; index < loc_row_end; ++index)
+    PetscCall(PetscOptionsGetReal(NULL, NULL, "-shift_pc_im", &shift_pc_im, &shift_flag));
+    if (shift_flag)
     {
-        int index_start = csr_ia[index - loc_row_start];
-        int index_end = csr_ia[index - loc_row_start + 1];
-        for (int index_j = index_start; index_j < index_end; ++index_j)
-        {
-            PetscScalar val_tmp;
-            PetscReal val_tmp_re, val_tmp_im;
-            PetscCall(MatGetValue(solver_pc, index, csr_ja[index_j], &val_tmp));
-            val_tmp_re = PetscRealPart(val_tmp);
-            val_tmp_im = PetscImaginaryPart(val_tmp);
-            val_tmp_im += shift_pc * val_tmp_im;
-
-            val_tmp = val_tmp_re + val_tmp_im * PETSC_i;
-            PetscCall(MatSetValue(solver_pc, index, csr_ja[index_j], val_tmp, INSERT_VALUES));
-        }
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "value for shift of preconditioner: %021.16le\n", shift_pc_im));
     }
 
-    PetscCall(MatAssemblyBegin(solver_pc, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(solver_pc, MAT_FINAL_ASSEMBLY));
+    // shift pc
+    /*
+     * solver_a = solver_a_re + solver_a_im * i
+     * solver_pc = solver_pc_re + solver_pc_im * i
+     *     solver_pc_re = solver_a_re + shift_re * solver_a_im
+     *     solver_pc_im = (1 + shift_im) * solver_a_im
+     *
+     * solver_pc_block = [solver_pc_re    -solver_pc_im]
+     *                   [solver_pc_im     solver_pc_re]
+     */
+    Mat solver_pc_re, solver_pc_im, solver_pc_im_oppo;
+    PetscCall(MatDuplicate(mysolver->solver_a_re, MAT_DO_NOT_COPY_VALUES, &solver_pc_re));
+    PetscCall(MatDuplicate(mysolver->solver_a_im, MAT_DO_NOT_COPY_VALUES, &solver_pc_im));
+    PetscCall(MatDuplicate(mysolver->solver_a_im, MAT_DO_NOT_COPY_VALUES, &solver_pc_im_oppo));
 
-    PetscCall(KSPSetOperators(mysolver->ksp, mysolver->solver_a, solver_pc));
-    PetscCall(KSPGetPC(mysolver->ksp, &(mysolver->pc)));
+    PetscCall(MatAXPY(solver_pc_re, shift_pc_re, mysolver->solver_a_im, SAME_NONZERO_PATTERN));
+    PetscCall(MatAXPY(solver_pc_re, 1., mysolver->solver_a_re, SAME_NONZERO_PATTERN));
+    PetscReal shift_pc_im_tmp = 1. + shift_pc_im;
+    PetscCall(MatAXPY(solver_pc_im, shift_pc_im_tmp, mysolver->solver_a_im, SAME_NONZERO_PATTERN));
+    PetscCall(MatAXPY(solver_pc_im_oppo, -1., solver_pc_im, SAME_NONZERO_PATTERN));
+
+    Mat pc_array[4] = {solver_pc_re, solver_pc_im_oppo, solver_pc_im, solver_pc_re};
+    Mat solver_block_pc;
+    PetscCall(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, pc_array, &solver_block_pc));
+
+    PetscCall(KSPSetOperators(mysolver->ksp, mysolver->solver_a, solver_block_pc));
 #elif
     PetscCall(KSPSetOperators(mysolver->ksp, mysolver->solver_a, mysolver->solver_a));
 #endif
@@ -146,7 +285,11 @@ void SolverPetscPreprocess(int argc, char **argv, MySolver *mysolver)
 
 void SolverPetscSolve(int argc, char **argv, MySolver *mysolver)
 {
+#ifdef CHALLENGE_06
+    PetscCall(KSPSolve(mysolver->ksp, mysolver->solver_block_b, mysolver->solver_block_x));
+#elif
     PetscCall(KSPSolve(mysolver->ksp, mysolver->solver_b, mysolver->solver_x));
+#endif
 }
 
 void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver)
@@ -154,6 +297,16 @@ void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver)
     PetscReal b_norm_2 = 0.;
     PetscReal r_norm_2 = 0.;
 
+#ifdef CHALLENGE_06
+    PetscCall(VecNorm(mysolver->solver_block_b, NORM_2, &b_norm_2));
+
+    PetscCall(MatMult(mysolver->solver_block_a, mysolver->solver_block_x, mysolver->solver_block_r));
+    PetscCall(VecAXPY(mysolver->solver_block_r, -1., mysolver->solver_block_b));
+    PetscCall(VecNorm(mysolver->solver_block_r, NORM_2, &r_norm_2));
+
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "            || b ||_2 = %021.16le\n", b_norm_2));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "|| r ||_2 / || b ||_2 = %021.16le\n", r_norm_2 / b_norm_2));
+#elif
     PetscCall(VecNorm(mysolver->solver_b, NORM_2, &b_norm_2));
 
     PetscCall(MatMult(mysolver->solver_a, mysolver->solver_x, mysolver->solver_r));
@@ -162,12 +315,24 @@ void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver)
 
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "            || b ||_2 = %021.16le\n", b_norm_2));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "|| r ||_2 / || b ||_2 = %021.16le\n", r_norm_2 / b_norm_2));
+#endif
 
     PetscCall(KSPDestroy(&(mysolver->ksp)));
     PetscCall(MatDestroy(&(mysolver->solver_a)));
     PetscCall(VecDestroy(&(mysolver->solver_b)));
     PetscCall(VecDestroy(&(mysolver->solver_r)));
     PetscCall(VecDestroy(&(mysolver->solver_x)));
+#ifdef CHALLENGE_06
+    PetscCall(MatDestroy(&(mysolver->solver_a_re)));
+    PetscCall(MatDestroy(&(mysolver->solver_a_im)));
+    PetscCall(MatDestroy(&(mysolver->solver_a_im_oppo)));
+    PetscCall(VecDestroy(&(mysolver->solver_b_re)));
+    PetscCall(VecDestroy(&(mysolver->solver_b_im)));
+    PetscCall(VecDestroy(&(mysolver->solver_x_re)));
+    PetscCall(VecDestroy(&(mysolver->solver_x_im)));
+    PetscCall(VecDestroy(&(mysolver->solver_r_re)));
+    PetscCall(VecDestroy(&(mysolver->solver_r_im)));
+#endif
 }
 
 #if 0
