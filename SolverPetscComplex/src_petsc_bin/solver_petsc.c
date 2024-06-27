@@ -260,7 +260,7 @@ void SolverPetscPreprocess(int argc, char **argv, MySolver *mysolver)
     Mat solver_block_pc;
     PetscCall(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, pc_array, &solver_block_pc));
 
-    PetscCall(KSPSetOperators(mysolver->ksp, mysolver->solver_a, solver_block_pc));
+    PetscCall(KSPSetOperators(mysolver->ksp, mysolver->solver_block_a, solver_block_pc));
 #elif
     PetscCall(KSPSetOperators(mysolver->ksp, mysolver->solver_a, mysolver->solver_a));
 #endif
