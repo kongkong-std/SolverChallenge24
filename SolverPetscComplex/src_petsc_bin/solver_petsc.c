@@ -72,7 +72,7 @@ void SolverImaginaryPartMatrix(const Mat *mat, Mat *mat_im)
     PetscCall(MatAssemblyEnd(*mat_im, MAT_FINAL_ASSEMBLY));
 }
 
-void SoverRealPartVector(const Vec *vec, Vec *vec_re)
+void SolverRealPartVector(const Vec *vec, Vec *vec_re)
 {
     PetscInt row_loc = 0;
     PetscCall(VecGetLocalSize(*vec, &row_loc));
