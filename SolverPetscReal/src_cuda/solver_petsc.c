@@ -51,8 +51,9 @@ void SolverPetscInitialize(int argc, char **argv,
     printf(">>>> In rank %d/%d, petsc matrix begin to assemble ...\n", myrank, mysize);
     for (int index = 0; index < mat_a->nnz; ++index)
     {
-        int index_i = mat_a->row_idx[index];
-        int index_j = mat_a->col_idx[index];
+        // 1-base to 0-base
+        int index_i = mat_a->row_idx[index] - 1;
+        int index_j = mat_a->col_idx[index] - 1;
         PetscScalar val_tmp = mat_a->val[index];
         PetscCall(MatSetValue(mysolver->solver_a, index_i, index_j, val_tmp, INSERT_VALUES));
     }

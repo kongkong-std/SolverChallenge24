@@ -50,7 +50,7 @@ OBJECT := $(patsubst %.c,%.o,$(wildcard $(SRC)/*.c))
 
 all: app_petsc_exe
 
-app_petsc_bin: $(OBJECT)
+app_petsc_exe: $(OBJECT)
 	$(CC) $(CMD) $(INCL) -o app_petsc_exe $(OBJECT) $(LIB) -fopenmp
 
 %.o: %.c
