@@ -206,7 +206,9 @@ void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
     PetscCall(MatAXPY(mysolver->solver_a_im_oppo, -1., mysolver->solver_a_im, SAME_NONZERO_PATTERN));
 
     Mat mat_array[4] = {mysolver->solver_a_re, mysolver->solver_a_im_oppo, mysolver->solver_a_im, mysolver->solver_a_re};
-    PetscCall(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, mat_array, &(mysolver->solver_block_a)));
+    Mat mat_nest;
+    PetscCall(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, mat_array, &mat_nest));
+    PetscCall(MatConvert(mat_nest, MATAIJ, MAT_INITIAL_MATRIX, &(mysolver->solver_block_a)));
 
     Vec rhs_vec_array[2] = {mysolver->solver_b_re, mysolver->solver_b_im};
     Vec sol_vec_array[2] = {mysolver->solver_x_re, mysolver->solver_x_im};
@@ -215,6 +217,16 @@ void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
     PetscCall(VecCreateNest(PETSC_COMM_WORLD, 2, NULL, rhs_vec_array, &(mysolver->solver_block_b)));
     PetscCall(VecCreateNest(PETSC_COMM_WORLD, 2, NULL, sol_vec_array, &(mysolver->solver_block_x)));
     PetscCall(VecCreateNest(PETSC_COMM_WORLD, 2, NULL, res_vec_array, &(mysolver->solver_block_r)));
+
+    // size of matrix
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "==== information of block linear system ====\n"));
+    PetscCall(MatGetSize(mysolver->solver_block_a, &m_mat, &n_mat));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "block matrix Row = %d, block matrix Column = %d\n", m_mat, n_mat));
+    PetscCall(MatGetInfo(mysolver->solver_block_a, MAT_GLOBAL_SUM, &info_mat));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "block matrix nz_allocated = %ld, block matrix nz_used = %ld, block matrix nz_unneeded = %ld\n",
+                          (long)(info_mat.nz_allocated), (long)(info_mat.nz_used), (long)(info_mat.nz_unneeded)));
+    PetscCall(VecGetSize(mysolver->solver_block_b, &n_vec));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "block rhs vector Row = %d\n", n_vec));
 #endif // CHALLENGE_06
 }
 
@@ -245,22 +257,23 @@ void SolverPetscPreprocess(int argc, char **argv, MySolver *mysolver)
      * solver_pc_block = [solver_pc_re    -solver_pc_im]
      *                   [solver_pc_im     solver_pc_re]
      */
-    Mat solver_pc_re, solver_pc_im, solver_pc_im_oppo;
-    PetscCall(MatDuplicate(mysolver->solver_a_re, MAT_DO_NOT_COPY_VALUES, &solver_pc_re));
-    PetscCall(MatDuplicate(mysolver->solver_a_im, MAT_DO_NOT_COPY_VALUES, &solver_pc_im));
-    PetscCall(MatDuplicate(mysolver->solver_a_im, MAT_DO_NOT_COPY_VALUES, &solver_pc_im_oppo));
+    PetscCall(MatDuplicate(mysolver->solver_a_re, MAT_DO_NOT_COPY_VALUES, &(mysolver->solver_pc_re)));
+    PetscCall(MatDuplicate(mysolver->solver_a_im, MAT_DO_NOT_COPY_VALUES, &(mysolver->solver_pc_im)));
+    PetscCall(MatDuplicate(mysolver->solver_a_im_oppo, MAT_DO_NOT_COPY_VALUES, &(mysolver->solver_pc_im_oppo)));
 
-    PetscCall(MatAXPY(solver_pc_re, shift_pc_re, mysolver->solver_a_im, SAME_NONZERO_PATTERN));
-    PetscCall(MatAXPY(solver_pc_re, 1., mysolver->solver_a_re, SAME_NONZERO_PATTERN));
+    PetscCall(MatAXPY(mysolver->solver_pc_re, shift_pc_re, mysolver->solver_a_im, SAME_NONZERO_PATTERN));
+    PetscCall(MatAXPY(mysolver->solver_pc_re, 1., mysolver->solver_a_re, SAME_NONZERO_PATTERN));
     PetscReal shift_pc_im_tmp = 1. + shift_pc_im;
-    PetscCall(MatAXPY(solver_pc_im, shift_pc_im_tmp, mysolver->solver_a_im, SAME_NONZERO_PATTERN));
-    PetscCall(MatAXPY(solver_pc_im_oppo, -1., solver_pc_im, SAME_NONZERO_PATTERN));
+    PetscCall(MatAXPY(mysolver->solver_pc_im, shift_pc_im_tmp, mysolver->solver_a_im, SAME_NONZERO_PATTERN));
+    PetscCall(MatAXPY(mysolver->solver_pc_im_oppo, -1., mysolver->solver_pc_im, SAME_NONZERO_PATTERN));
 
-    Mat pc_array[4] = {solver_pc_re, solver_pc_im_oppo, solver_pc_im, solver_pc_re};
-    Mat solver_block_pc;
-    PetscCall(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, pc_array, &solver_block_pc));
+    Mat pc_array[4] = {mysolver->solver_pc_re, mysolver->solver_pc_im_oppo,
+                       mysolver->solver_pc_im, mysolver->solver_pc_re};
+    Mat pc_nest;
+    PetscCall(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, pc_array, &pc_nest));
+    PetscCall(MatConvert(pc_nest, MATAIJ, MAT_INITIAL_MATRIX, &(mysolver->solver_block_pc)));
 
-    PetscCall(KSPSetOperators(mysolver->ksp, mysolver->solver_block_a, solver_block_pc));
+    PetscCall(KSPSetOperators(mysolver->ksp, mysolver->solver_block_a, mysolver->solver_block_pc));
 #elif
     PetscCall(KSPSetOperators(mysolver->ksp, mysolver->solver_a, mysolver->solver_a));
 #endif
@@ -326,12 +339,24 @@ void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver)
     PetscCall(MatDestroy(&(mysolver->solver_a_re)));
     PetscCall(MatDestroy(&(mysolver->solver_a_im)));
     PetscCall(MatDestroy(&(mysolver->solver_a_im_oppo)));
+    PetscCall(MatDestroy(&(mysolver->solver_block_a)));
+
+    PetscCall(MatDestroy(&(mysolver->solver_pc_re)));
+    PetscCall(MatDestroy(&(mysolver->solver_pc_im)));
+    PetscCall(MatDestroy(&(mysolver->solver_pc_im_oppo)));
+    PetscCall(MatDestroy(&(mysolver->solver_block_pc)));
+
     PetscCall(VecDestroy(&(mysolver->solver_b_re)));
     PetscCall(VecDestroy(&(mysolver->solver_b_im)));
+    PetscCall(VecDestroy(&(mysolver->solver_block_b)));
+
     PetscCall(VecDestroy(&(mysolver->solver_x_re)));
     PetscCall(VecDestroy(&(mysolver->solver_x_im)));
+    PetscCall(VecDestroy(&(mysolver->solver_block_x)));
+
     PetscCall(VecDestroy(&(mysolver->solver_r_re)));
     PetscCall(VecDestroy(&(mysolver->solver_r_im)));
+    PetscCall(VecDestroy(&(mysolver->solver_block_r)));
 #endif
 }
 

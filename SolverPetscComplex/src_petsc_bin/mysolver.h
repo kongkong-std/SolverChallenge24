@@ -17,10 +17,11 @@ typedef struct my_solver
     Vec solver_b, solver_x, solver_r; // rhs, solution, residual
 #ifdef CHALLENGE_06
     Mat solver_a_re, solver_a_im, solver_a_im_oppo;
+    Mat solver_pc_re, solver_pc_im, solver_pc_im_oppo;
     Vec solver_b_re, solver_b_im;
     Vec solver_x_re, solver_x_im;
     Vec solver_r_re, solver_r_im;
-    Mat solver_block_a;
+    Mat solver_block_a, solver_block_pc;
     Vec solver_block_b, solver_block_x, solver_block_r;
 #endif
 } MySolver;
