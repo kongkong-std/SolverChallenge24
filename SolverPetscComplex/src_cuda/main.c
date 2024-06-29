@@ -149,8 +149,14 @@ int main(int argc, char **argv)
     // file process
     Matrix mat_data;
     Vector rhs_data;
+    
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, ">>>> begin to matrix file process...\n"));
     MatrixProcess(path_mat, &mat_data);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, ">>>> matrix file has been processed!!!\n\n"));
+
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, ">>>> begin to vector file process...\n"));
     VectorProcess(path_rhs, &rhs_data);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, ">>>> vector file has been processed!!!\n\n"));
 
 #ifdef ITERATIVE_SOLVER
     if (sys_type == 0) // system

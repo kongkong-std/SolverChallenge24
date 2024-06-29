@@ -45,10 +45,11 @@ void SolverPetscInitialize(int argc, char **argv,
 
     PetscCall(MatCreate(PETSC_COMM_WORLD, &(mysolver->solver_a)));
     PetscCall(MatSetSizes(mysolver->solver_a, PETSC_DECIDE, PETSC_DECIDE, n_size, n_size));
-    PetscCall(MatSetType(mysolver->solver_a, MATAIJCUSPARSE));
+    // PetscCall(MatSetType(mysolver->solver_a, MATAIJCUSPARSE));
+    PetscCall(MatSetType(mysolver->solver_a, MATAIJ));
     PetscCall(MatSetUp(mysolver->solver_a));
 
-    printf(">>>> In rank %d/%d, petsc matrix begin to assemble ...\n", myrank, mysize);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, ">>>> In rank %d/%d, petsc matrix begin to assemble ...\n", myrank, mysize));
     for (int index = 0; index < mat_a->nnz; ++index)
     {
         // 1-base to 0-base
@@ -59,14 +60,15 @@ void SolverPetscInitialize(int argc, char **argv,
     }
     PetscCall(MatAssemblyBegin(mysolver->solver_a, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(mysolver->solver_a, MAT_FINAL_ASSEMBLY));
-    printf("==== In rank %d/%d, petsc matrix has been assembled !!!\n", myrank, mysize);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "==== In rank %d/%d, petsc matrix has been assembled !!!\n", myrank, mysize));
 
     // rhs data
     PetscCall(VecCreate(PETSC_COMM_WORLD, &(mysolver->solver_b)));
-    PetscCall(VecSetType(mysolver->solver_b, VECCUDA));
+    // PetscCall(VecSetType(mysolver->solver_b, VECCUDA));
+    PetscCall(VecSetType(mysolver->solver_b, VECMPI));
     PetscCall(VecSetSizes(mysolver->solver_b, PETSC_DECIDE, n_size));
 
-    printf(">>>> In rank %d/%d, petsc vector begin to assemble ...\n", myrank, mysize);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, ">>>> In rank %d/%d, petsc vector begin to assemble ...\n", myrank, mysize));
     for (int index = 0; index < n_size; ++index)
     {
         PetscScalar val_tmp = rhs_b->val[index];
@@ -75,7 +77,7 @@ void SolverPetscInitialize(int argc, char **argv,
 
     PetscCall(VecAssemblyBegin(mysolver->solver_b));
     PetscCall(VecAssemblyEnd(mysolver->solver_b));
-    printf("==== In rank %d/%d, petsc vector has been assembled !!!\n", myrank, mysize);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "==== In rank %d/%d, petsc vector has been assembled !!!\n", myrank, mysize));
 
     // sol vector and residual vector
     PetscCall(VecDuplicate(mysolver->solver_b, &(mysolver->solver_x)));
