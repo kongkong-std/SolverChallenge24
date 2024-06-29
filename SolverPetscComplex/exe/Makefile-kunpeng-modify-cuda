@@ -1,0 +1,63 @@
+# makefile for complex petsc cuda version
+# module load cmake3.23 cuda/11.6/modulefile-cuda-11.6
+# module load gcc/kunpenggcc/10.3.1/gcc10.3.1
+# module load openmpi/4.0.1_kunpenggcc10.3.1
+
+CC = /workspace/public/software/mpi/openmpi/4.0.1_kunpenggcc10.3.1/bin/mpicc
+SRC = ../src
+
+CFLAGS = -c -std=c99 -fopenmp
+CMD = -fPIC -Wall -Wwrite-strings -Wno-unknown-pragmas -Wno-lto-type-mismatch \
+-fstack-protector -fvisibility=hidden -g3 -O3
+
+INCL = -I/workspace/home/migration/qinzikang/cuda-petsc/modify_petsc-3.21.2/complex/include \
+-I/workspace/home/migration/qinzikang/cuda-petsc/slate/include \
+-I/workspace/home/migration/qinzikang/cuda-petsc/metis-5.1.0/include \
+-I/workspace/home/migration/qinzikang/cuda-petsc/AMGX-main/include \
+-I/workspace/public/software/mpi/openmpi/4.0.1_kunpenggcc10.3.1/include \
+-I/workspace/public/software/tool/cuda/cuda-11.6/include 
+
+LIB_PATH = -Wl,-rpath,/workspace/home/migration/qinzikang/cuda-petsc/modify_petsc-3.21.2/complex/lib \
+-L/workspace/home/migration/qinzikang/cuda-petsc/modify_petsc-3.21.2/complex/lib \
+-Wl,-rpath,/workspace/home/migration/qinzikang/cuda-petsc/slate/lib \
+-L/workspace/home/migration/qinzikang/cuda-petsc/slate/lib \
+-Wl,-rpath,/workspace/home/migration/qinzikang/cuda-petsc/metis-5.1.0/lib \
+-L/workspace/home/migration/qinzikang/cuda-petsc/metis-5.1.0/lib \
+-Wl,-rpath,/workspace/home/migration/qinzikang/cuda-petsc/AMGX-main/lib \
+-L/workspace/home/migration/qinzikang/cuda-petsc/AMGX-main/lib \
+-Wl,-rpath,/workspace/public/software/tool/cuda/cuda-11.6/lib64 \
+-L/workspace/public/software/tool/cuda/cuda-11.6/lib64 \
+-L/workspace/public/software/tool/cuda/cuda-11.6/lib64/stubs \
+-Wl,-rpath,/workspace/public/software/mpi/openmpi/4.0.1_kunpenggcc10.3.1/lib \
+-L/workspace/public/software/mpi/openmpi/4.0.1_kunpenggcc10.3.1/lib \
+-Wl,-rpath,/workspace/public/software/compilers/gcc/kunpenggcc/10.3.1/gcc-10.3.1-2021.09-aarch64-linux/lib64/gcc/aarch64-linux-gnu/10.3.1 \
+-L/workspace/public/software/compilers/gcc/kunpenggcc/10.3.1/gcc-10.3.1-2021.09-aarch64-linux/lib64/gcc/aarch64-linux-gnu/10.3.1 \
+-Wl,-rpath,/workspace/public/software/compilers/gcc/kunpenggcc/10.3.1/gcc-10.3.1-2021.09-aarch64-linux/lib64/gcc/aarch64-linux-gnu \
+-L/workspace/public/software/compilers/gcc/kunpenggcc/10.3.1/gcc-10.3.1-2021.09-aarch64-linux/lib64/gcc/aarch64-linux-gnu \
+-Wl,-rpath,/workspace/public/software/compilers/gcc/kunpenggcc/10.3.1/gcc-10.3.1-2021.09-aarch64-linux/lib64/gcc \
+-L/workspace/public/software/compilers/gcc/kunpenggcc/10.3.1/gcc-10.3.1-2021.09-aarch64-linux/lib64/gcc \
+-Wl,-rpath,/workspace/public/software/compilers/gcc/kunpenggcc/10.3.1/gcc-10.3.1-2021.09-aarch64-linux/lib64 \
+-L/workspace/public/software/compilers/gcc/kunpenggcc/10.3.1/gcc-10.3.1-2021.09-aarch64-linux/lib64 \
+-Wl,-rpath,/workspace/public/software/compilers/gcc/kunpenggcc/10.3.1/gcc-10.3.1-2021.09-aarch64-linux/aarch64-linux-gnu/lib \
+-L/workspace/public/software/compilers/gcc/kunpenggcc/10.3.1/gcc-10.3.1-2021.09-aarch64-linux/aarch64-linux-gnu/lib 
+
+LIB_FLAG = -lpetsc -lstrumpack -lslate -lblaspp -llapackpp -lscalapack -lopenblas -lzfp \
+-lmetis -lamgx -lm -lcudart -lnvToolsExt -lcufft -lcublas -lcusparse -lcusolver -lcurand \
+-lcuda -lX11 -ldl -lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi -lgfortran -lm \
+-lgfortran -lm -lgcc_s -lpthread -lstdc++ -ldl
+
+LIB = $(LIB_PATH) $(LIB_FLAG)
+OBJECT := $(patsubst %.c,%.o,$(wildcard $(SRC)/*.c))
+
+.PHONY: all clean
+
+all: app_petsc_exe
+
+app_petsc_exe: $(OBJECT)
+	$(CC) $(CMD) $(INCL) -o app_petsc_exe $(OBJECT) $(LIB) -fopenmp
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(CMD) $(INCL) "$<" -o "$@"
+
+clean:
+	rm app_petsc_exe $(OBJECT)
