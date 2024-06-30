@@ -6,7 +6,7 @@
 #include "mysolver.h"
 
 // read matrix file
-#include "mmio_highlevel.h"
+#include "file_process.h"
 
 // utlise function file
 #include "utlise.h"
@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     char *filename_b;         // the filename of right-hand side vector b
     int read_matrix_base = 1; // 0-base or 1-base, default 1-base
     int type = 0;             // type to output time, 0: end to end time; 1:solver time + solve time; 2:solve time; default 0
-    int test_frequency = 10;  // run code frequency
+    int test_frequency = 1;   // run code frequency
     int sys_type = 0;         // type of algebraic systems, 0: real, 1: complex; default 0
 
     /* ========================================== */
@@ -66,12 +66,12 @@ int main(int argc, char **argv)
     printf("\n>>>> begin to process linear system file...\n");
     if (sys_type == 0) // real system
     {
-        // load matrix
-        mmio_allinone(&m, &n, &nnzA, &isSymmetricA, &read_matrix_base, &row_ptr, &col_idx, &val, filename_matrix);
+        RealCOO2CSRMatrixFileProcess(filename_matrix, &m, &n, &nnzA, &row_ptr, &col_idx, &val);
+
         if (m != n)
         {
             fprintf(stdout, "Invalid matrix size.\n");
-            return 0;
+            exit(EXIT_FAILURE);
         }
 
         x = (double *)malloc(sizeof(double) * n);
@@ -85,7 +85,8 @@ int main(int argc, char **argv)
     }
     else
     { // complex system
-        mmio_allinone_complex(&m, &n, &nnzA, &isSymmetricA, &read_matrix_base, &row_ptr, &col_idx, &val, &val_im, filename_matrix);
+        ComplexCOO2CSRMatrixFileProcess(filename_matrix, &m, &n, &nnzA, &row_ptr, &col_idx, &val, &val_im);
+
         if (m != n)
         {
             fprintf(stdout, "Invalid matrix size.\n");
