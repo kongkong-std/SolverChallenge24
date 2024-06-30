@@ -60,8 +60,8 @@ typedef struct my_solver_complex
 
 //! real system
 void KMLRealSolverInitialize(MySolver * /*solver type*/, double * /*sol*/, int /*size of linear system*/,
-                             const int * /*row ptr in csr*/, const int * /*col idx in csr*/,
-                             const double * /*val in csr*/, const double * /*rhs*/);
+                             int * /*row ptr in csr*/, int * /*col idx in csr*/,
+                             double * /*val in csr*/, double * /*rhs*/);
 void KMLRealSolverAnalyze(MySolver * /*solver type*/);
 void KMLRealSolverFactor(MySolver * /*solver type*/);
 void KMLRealSolverSolve(MySolver * /*solver type*/);
@@ -70,9 +70,9 @@ void KMLRealSolverClean(MySolver * /*solver type*/);
 
 //! complex system
 void KMLComplexSolverInitialize(MySolverComplex * /*solver type*/, kml_complex_double * /*double complex sol*/,
-                                int /*size of linear system*/, const int * /*row prt in csr*/, const int * /*col idx in csr*/,
-                                const kml_complex_double * /*double complex val in csr*/,
-                                const kml_complex_double * /*double complex rhs*/);
+                                int /*size of linear system*/, int * /*row prt in csr*/, int * /*col idx in csr*/,
+                                kml_complex_double * /*double complex val in csr*/,
+                                kml_complex_double * /*double complex rhs*/);
 void KMLComplexSolverAnalyze(MySolverComplex * /*solver type*/);
 void KMLComplexSolverFactor(MySolverComplex * /*solver type*/);
 void KMLComplexSolverSolve(MySolverComplex * /*solver type*/);

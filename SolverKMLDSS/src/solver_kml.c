@@ -1,8 +1,8 @@
 #include "mysolver.h"
 
 void KMLRealSolverInitialize(MySolver *solver, double *sol, int n,
-                             const int *row_ptr, const int *col_idx,
-                             const double *val, const double *rhs)
+                             int *row_ptr, int *col_idx,
+                             double *val, double *rhs)
 {
     int ierr = 0;
 
@@ -203,9 +203,9 @@ void KMLRealSolverClean(MySolver *solver)
 }
 
 void KMLComplexSolverInitialize(MySolverComplex *solver, kml_complex_double *sol,
-                                int n, const int *row_ptr, const int *col_idx,
-                                const kml_complex_double *val,
-                                const kml_complex_double *rhs)
+                                int n, int *row_ptr, int *col_idx,
+                                kml_complex_double *val,
+                                kml_complex_double *rhs)
 {
     int ierr = 0;
 
