@@ -39,7 +39,7 @@ int main(int argc, char **argv)
         {
             filename_matrix = argv[index + 1];
         }
-        if (strstr("-fila_rhs", argv[index]))
+        if (strstr("-file_rhs", argv[index]))
         {
             filename_b = argv[index + 1];
         }
@@ -175,8 +175,7 @@ int main(int argc, char **argv)
         b = (double *)malloc(sizeof(double) * n);
         b_im = (double *)malloc(sizeof(double) * n);
 
-        // load right-hand side vector b
-        load_b_complex(n, b, b_im, filename_b);
+        ComplexRHSFileProcess(filename_b, &b, &b_im);
 
         // initial vector x
         memset(x, 0.0, sizeof(double) * n);
