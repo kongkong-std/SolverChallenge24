@@ -14,7 +14,7 @@
 
 int main(int argc, char **argv)
 {
-    int m, n, nnzA, isSymmetricA;
+    int m, n, nnzA;
     int *row_ptr = NULL;            // the csr row pointer array of matrix A
     int *col_idx = NULL;            // the csr column index array of matrix A
     double *val = NULL;             // the csr value array of matrix A (real number)
