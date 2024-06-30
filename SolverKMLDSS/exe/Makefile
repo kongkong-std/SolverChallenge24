@@ -15,7 +15,7 @@ INCL =
 
 LIB_PATH =
 
-LIB_FLAG = -lksolver -lkservice -lopenblas
+LIB_FLAG = -lksolver -lkservice -lopenblas -lm
 
 LIB = $(LIB_PATH) $(LIB_FLAG)
 OBJECT := $(patsubst %.c,%.o,$(wildcard $(SRC)/*.c))
