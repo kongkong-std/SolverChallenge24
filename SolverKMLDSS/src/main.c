@@ -63,9 +63,9 @@ int main(int argc, char **argv)
     /* ========================================== */
     // Step 1: Load matrix and rhs from mtx files
     /* ========================================== */
-    printf("\n>>>> begin to process linear system file...\n");
     if (sys_type == 0) // real system
     {
+        printf("\n>>>> begin to process linear system file...\n");
         RealCOO2CSRMatrixFileProcess(filename_matrix, &m, &n, &nnzA, &row_ptr, &col_idx, &val);
 
         if (m != n)
@@ -75,44 +75,15 @@ int main(int argc, char **argv)
         }
 
         x = (double *)malloc(sizeof(double) * n);
-        b = (double *)malloc(sizeof(double) * n);
 
         // load right-hand side vector b
-        load_vector(n, b, filename_b);
+        RealRHSFileProcess(filename_b, &b);
 
         // initial vector x
         memset(x, 0.0, sizeof(double) * n);
-    }
-    else
-    { // complex system
-        ComplexCOO2CSRMatrixFileProcess(filename_matrix, &m, &n, &nnzA, &row_ptr, &col_idx, &val, &val_im);
+        printf(">>>> linear system file has been processed!!!\n\n");
 
-        if (m != n)
-        {
-            fprintf(stdout, "Invalid matrix size.\n");
-            return 0;
-        }
-
-        x = (double *)malloc(sizeof(double) * n);
-        x_im = (double *)malloc(sizeof(double) * n);
-        b = (double *)malloc(sizeof(double) * n);
-        b_im = (double *)malloc(sizeof(double) * n);
-
-        // load right-hand side vector b
-        load_b_complex(n, b, b_im, filename_b);
-
-        // initial vector x
-        memset(x, 0.0, sizeof(double) * n);
-        memset(x_im, 0.0, sizeof(double) * n);
-    }
-    printf(">>>> linear system file has been processed!!!\n\n");
-
-    /* ========================================== */
-    // Step 2: Solve the linear system
-    /* ========================================== */
-    printf(">>>> begin to call kml-dss solver...\n");
-    if (sys_type == 0) // real system
-    {
+        printf(">>>> begin to call kml-dss solver...\n");
         // direct solver sample
         MySolver mysolver;
         KMLRealSolverInitialize(&mysolver, x, n, row_ptr, col_idx, val, b);
@@ -157,10 +128,62 @@ int main(int argc, char **argv)
 
         // free kml-dss handle
         KMLRealSolverClean(&mysolver);
+        printf(">>>> kml-dss solver has done!!!\n\n");
+
+        // check time
+        if (type == 0)
+        {
+            fprintf(stdout, "CHECK end to end time :         %12.6lf ms\n", time);
+        }
+        else if (type == 1)
+        {
+            fprintf(stdout, "CHECK solver + solve time :     %12.6lf ms\n", time);
+        }
+        else if (type == 2)
+        {
+            fprintf(stdout, "CHECK solve time :              %12.6lf ms\n", time);
+        }
+
+        // check the memory
+        mem_usage();
+
+        // 1) using double precision
+        check_correctness(n, row_ptr, col_idx, val, x, b);
+        // 2) using long double precision
+        check_correctness_ld_d2ld(n, row_ptr, col_idx, val, x, b);
+
+        free(row_ptr);
+        free(col_idx);
+        free(val);
+        free(x);
+        free(b);
     }
-    else
+
+    if (sys_type == 1)
     { // complex system
-        // direct solver sample
+        printf("\n>>>> begin to process linear system file...\n");
+        ComplexCOO2CSRMatrixFileProcess(filename_matrix, &m, &n, &nnzA, &row_ptr, &col_idx, &val, &val_im);
+
+        if (m != n)
+        {
+            fprintf(stdout, "Invalid matrix size.\n");
+            return 0;
+        }
+
+        x = (double *)malloc(sizeof(double) * n);
+        x_im = (double *)malloc(sizeof(double) * n);
+        b = (double *)malloc(sizeof(double) * n);
+        b_im = (double *)malloc(sizeof(double) * n);
+
+        // load right-hand side vector b
+        load_b_complex(n, b, b_im, filename_b);
+
+        // initial vector x
+        memset(x, 0.0, sizeof(double) * n);
+        memset(x_im, 0.0, sizeof(double) * n);
+        printf(">>>> linear system file has been processed!!!\n\n");
+
+        printf(">>>> begin to call kml-dss solver...\n");
         MySolverComplex mysolver;
         kml_complex_double *kml_dss_solver_x = NULL, *kml_dss_solver_val = NULL, *kml_dss_solver_b = NULL;
         if ((kml_dss_solver_x = (kml_complex_double *)malloc(n * sizeof(kml_complex_double))) == NULL ||
@@ -221,7 +244,7 @@ int main(int argc, char **argv)
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
 
-        KMLComplexSolverClean(&mysolver);
+        KMLComplexSolverQuery(&mysolver);
 
         for (int index = 0; index < n; ++index)
         {
@@ -235,30 +258,45 @@ int main(int argc, char **argv)
 
         // free kml-dss handle
         KMLComplexSolverClean(&mysolver);
+        printf(">>>> kml-dss solver has done!!!\n\n");
+
+        // check time
+        if (type == 0)
+        {
+            fprintf(stdout, "CHECK end to end time :         %12.6lf ms\n", time);
+        }
+        else if (type == 1)
+        {
+            fprintf(stdout, "CHECK solver + solve time :     %12.6lf ms\n", time);
+        }
+        else if (type == 2)
+        {
+            fprintf(stdout, "CHECK solve time :              %12.6lf ms\n", time);
+        }
+
+        // check the memory
+        mem_usage();
+
+        // 1) using double precision
+        check_correctness_complex(n, row_ptr, col_idx, val, val_im, x, x_im, b, b_im);
+        // 2) using long double precision
+        check_correctness_complex_ld_d2ld(n, row_ptr, col_idx, val, val_im, x, x_im, b, b_im);
+
+        free(row_ptr);
+        free(col_idx);
+        free(val);
+        free(x);
+        free(b);
+        free(val_im);
+        free(x_im);
+        free(b_im);
     }
-    printf(">>>> kml-dss solver has done!!!\n\n");
 
     fprintf(stdout, "------------------------------------------\n");
 
     /* ========================================== */
     // Step 3: Check time, memory and correctness
     /* ========================================== */
-    // check time
-    if (type == 0)
-    {
-        fprintf(stdout, "CHECK end to end time :         %12.6lf ms\n", time);
-    }
-    else if (type == 1)
-    {
-        fprintf(stdout, "CHECK solver + solve time :     %12.6lf ms\n", time);
-    }
-    else if (type == 2)
-    {
-        fprintf(stdout, "CHECK solve time :              %12.6lf ms\n", time);
-    }
-
-    // check the memory
-    mem_usage();
 
 #if 0
     // store x to a file
@@ -268,32 +306,6 @@ int main(int argc, char **argv)
     else // complex rhs
         store_x_complex(n, x, x_im, answer_x);
 #endif // store solution file
-
-    // check the correctness
-    if (sys_type == 0) // real system
-    {
-        // 1) using double precision
-        check_correctness(n, row_ptr, col_idx, val, x, b);
-        // 2) using long double precision
-        check_correctness_ld_d2ld(n, row_ptr, col_idx, val, x, b);
-    }
-    else
-    { // complex system
-        // 1) using double precision
-        check_correctness_complex(n, row_ptr, col_idx, val, val_im, x, x_im, b, b_im);
-        // 2) using long double precision
-        check_correctness_complex_ld_d2ld(n, row_ptr, col_idx, val, val_im, x, x_im, b, b_im);
-
-        free(val_im);
-        free(x_im);
-        free(b_im);
-    }
-
-    free(row_ptr);
-    free(col_idx);
-    free(val);
-    free(x);
-    free(b);
 
     return 0;
 }

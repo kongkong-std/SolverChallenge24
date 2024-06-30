@@ -1,6 +1,81 @@
 #include "file_process.h"
 #define MAX_BUFFER_SIZE 4096
 
+void RealRHSFileProcess(const char *path, double **rhs)
+{
+    FILE *fp = NULL;
+    if ((fp = fopen(path, "rb")) == NULL)
+    {
+        fprintf(stderr, "Cannot open file - rhs file\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char buffer[MAX_BUFFER_SIZE];
+    while (fgets(buffer, sizeof(buffer), fp) != NULL)
+    {
+        if (buffer[0] != '%')
+        {
+            // Move file pointer back to the beginning of this line
+            fseek(fp, -strlen(buffer), SEEK_CUR);
+            break;
+        }
+    }
+
+    int n = 0;
+    fscanf(fp, "%d", &n);
+
+    if ((*rhs = (double *)malloc(n * sizeof(double))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation failed - rhs data\n");
+        exit(EXIT_FAILURE);
+    }
+
+    for (int index = 0; index < n; ++index)
+    {
+        fscanf(fp, "%lf", *rhs + index);
+    }
+
+    fclose(fp);
+}
+
+void ComplexRHSFileProcess(const char *path, double **re_rhs, double **im_rhs)
+{
+    FILE *fp = NULL;
+    if ((fp = fopen(path, "rb")) == NULL)
+    {
+        fprintf(stderr, "Cannot open file - rhs file\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char buffer[MAX_BUFFER_SIZE];
+    while (fgets(buffer, sizeof(buffer), fp) != NULL)
+    {
+        if (buffer[0] != '%')
+        {
+            // Move file pointer back to the beginning of this line
+            fseek(fp, -strlen(buffer), SEEK_CUR);
+            break;
+        }
+    }
+
+    int n = 0;
+    fscanf(fp, "%d", &n);
+
+    if ((*re_rhs = (double *)malloc(n * sizeof(double))) == NULL ||
+        (*im_rhs = (double *)malloc(n * sizeof(double))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation failed - rhs data\n");
+        exit(EXIT_FAILURE);
+    }
+
+    for (int index = 0; index < n; ++index)
+    {
+        fscanf(fp, "%lf%lf", *re_rhs + index, *im_rhs + index);
+    }
+
+    fclose(fp);
+}
+
 void RealCOO2CSRMatrixFileProcess(const char *path, int *m, int *n, int *nnz,
                                   int **csr_row_ptr, int **csr_col_idx, double **csr_val)
 {

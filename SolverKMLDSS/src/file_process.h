@@ -13,4 +13,7 @@ void ComplexCOO2CSRMatrixFileProcess(const char * /*path to file*/, int * /*row*
                                      int ** /*row pointer*/, int ** /*column index pointer*/,
                                      double ** /*re value*/, double ** /*im value*/);
 
+void RealRHSFileProcess(const char * /*path to file*/, double ** /*rhs*/);
+void ComplexRHSFileProcess(const char * /*path to file*/, double ** /*re rhs*/, double ** /*im rhs*/);
+
 #endif
