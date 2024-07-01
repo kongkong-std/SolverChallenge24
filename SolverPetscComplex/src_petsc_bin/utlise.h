@@ -27,7 +27,7 @@
 #define ABS(a) (((a) >= 0.0) ? (a) : -(a))  ///< absolute value of a
 #endif
 
-static inline void mem_usage();
+void mem_usage();
 
 // check answer function
 void check_correctness(int n, int *row_ptr, int *col_idx, double *val, double *x, double *b);

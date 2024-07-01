@@ -1,6 +1,6 @@
 #include "utlise.h"
 
-static inline void mem_usage()
+void mem_usage()
 {
     struct rusage r_usage;
     getrusage(RUSAGE_SELF, &r_usage);
