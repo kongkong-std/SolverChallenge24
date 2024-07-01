@@ -11,6 +11,8 @@
 
 #include <mpi.h>
 
+#define MPI_USE
+
 // utlise function file
 #include "utlise.h"
 #include "utlise_long.h"
@@ -177,7 +179,7 @@ int main(int argc, char **argv)
     // Step 3: Check time, memory and correctness
     /* ========================================== */
     // check the memory
-    // mem_usage();
+    mem_usage();
 
     if (myrank == 0)
     {

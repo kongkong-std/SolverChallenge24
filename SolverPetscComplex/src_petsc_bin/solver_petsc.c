@@ -274,7 +274,7 @@ void SolverPetscPreprocess(int argc, char **argv, MySolver *mysolver)
     PetscCall(MatConvert(pc_nest, MATAIJ, MAT_INITIAL_MATRIX, &(mysolver->solver_block_pc)));
 
     PetscCall(KSPSetOperators(mysolver->ksp, mysolver->solver_block_a, mysolver->solver_block_pc));
-#elif
+#else
     PetscCall(KSPSetOperators(mysolver->ksp, mysolver->solver_a, mysolver->solver_a));
 #endif
     PetscCall(KSPSetFromOptions(mysolver->ksp));
@@ -300,7 +300,7 @@ void SolverPetscSolve(int argc, char **argv, MySolver *mysolver)
 {
 #ifdef CHALLENGE_06
     PetscCall(KSPSolve(mysolver->ksp, mysolver->solver_block_b, mysolver->solver_block_x));
-#elif
+#else
     PetscCall(KSPSolve(mysolver->ksp, mysolver->solver_b, mysolver->solver_x));
 #endif
 }
@@ -319,7 +319,7 @@ void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver)
 
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "            || b ||_2 = %021.16le\n", b_norm_2));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "|| r ||_2 / || b ||_2 = %021.16le\n", r_norm_2 / b_norm_2));
-#elif
+#else
     PetscCall(VecNorm(mysolver->solver_b, NORM_2, &b_norm_2));
 
     PetscCall(MatMult(mysolver->solver_a, mysolver->solver_x, mysolver->solver_r));

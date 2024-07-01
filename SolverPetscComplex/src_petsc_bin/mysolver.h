@@ -4,7 +4,7 @@
 // #define DIRECT_SOLVER
 #define ITERATIVE_SOLVER
 
-#define CHALLENGE_06 // preconditioner for 06
+//#define CHALLENGE_06 // preconditioner for 06
 
 #include <petscksp.h>
 
