@@ -4,8 +4,6 @@
 // #define DIRECT_SOLVER
 #define ITERATIVE_SOLVER
 
-//#define CHALLENGE_06 // preconditioner for 06
-
 #include <petscksp.h>
 
 // please add your code in this file
@@ -15,15 +13,6 @@ typedef struct my_solver
     PC pc;
     Mat solver_a;
     Vec solver_b, solver_x, solver_r; // rhs, solution, residual
-#ifdef CHALLENGE_06
-    Mat solver_a_re, solver_a_im, solver_a_im_oppo;
-    Mat solver_pc_re, solver_pc_im, solver_pc_im_oppo;
-    Vec solver_b_re, solver_b_im;
-    Vec solver_x_re, solver_x_im;
-    Vec solver_r_re, solver_r_im;
-    Mat solver_block_a, solver_block_pc;
-    Vec solver_block_b, solver_block_x, solver_block_r;
-#endif
 } MySolver;
 
 #ifdef DIRECT_SOLVER
@@ -64,27 +53,10 @@ void SolverPetscSolve(int argc, char **argv, MySolver *mysolver);
  */
 void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver);
 
-#ifdef CHALLENGE_06
 /*
- * real part matrix
+ * solver destroy
  */
-void SolverRealPartMatrix(const Mat * /*original complex petsc matrix*/, Mat * /*real part matrix*/);
-
-/*
- * imaginary part matrix
- */
-void SolverImaginaryPartMatrix(const Mat * /*original complex petsc matrix*/, Mat * /*imaginary part matrix*/);
-
-/*
- * real part vector
- */
-void SolverRealPartVector(const Vec * /*original complex petsc vector*/, Vec * /*real part vector*/);
-
-/*
- * imaginary part vector
- */
-void SolverImaginaryPartVector(const Vec * /*original complex petsc vector*/, Vec * /*imaginary part vector*/);
-#endif // CHALLENGE_06
+void SolverPetscDestroy(MySolver *);
 
 #if 0
 /*
