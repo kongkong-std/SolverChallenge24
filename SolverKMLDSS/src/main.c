@@ -29,6 +29,8 @@ int main(int argc, char **argv)
     int type = 0;             // type to output time, 0: end to end time; 1:solver time + solve time; 2:solve time; default 0
     int test_frequency = 1;   // run code frequency
     int sys_type = 0;         // type of algebraic systems, 0: real, 1: complex; default 0
+    int IR_times = 10;        // max IR time
+    double sys_rtol = 1e-8;   // relative residual tolerance
 
     /* ========================================== */
     // Step 0: Read command line argument
@@ -54,6 +56,14 @@ int main(int argc, char **argv)
         if (strstr("-test_frequency", argv[index]))
         {
             test_frequency = atoi(argv[index + 1]);
+        }
+        if (strstr("-ir_times", argv[index]))
+        {
+            IR_times = atoi(argv[index + 1]);
+        }
+        if (strstr("-sys_rtol", argv[index]))
+        {
+            sys_rtol = atof(argv[index + 1]);
         }
     }
 
@@ -132,7 +142,7 @@ int main(int argc, char **argv)
                 printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
                 printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
                 printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
-                while (solver_r_l2_norm / solver_b_l2_norm >= 1e-8 && ir_times < 10)
+                while (solver_r_l2_norm / solver_b_l2_norm >= sys_rtol && ir_times < IR_times)
                 {
                     ++ir_times;
                     printf("\n>>>> In IR times = %d\n, information", ir_times);
@@ -192,7 +202,7 @@ int main(int argc, char **argv)
                 printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
                 printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
                 printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
-                while (solver_r_l2_norm / solver_b_l2_norm >= 1e-8 && ir_times < 10)
+                while (solver_r_l2_norm / solver_b_l2_norm >= sys_rtol && ir_times < IR_times)
                 {
                     ++ir_times;
                     printf("\n>>>> In IR times = %d\n, information", ir_times);
@@ -252,7 +262,7 @@ int main(int argc, char **argv)
                 printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
                 printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
                 printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
-                while (solver_r_l2_norm / solver_b_l2_norm >= 1e-8 && ir_times < 10)
+                while (solver_r_l2_norm / solver_b_l2_norm >= sys_rtol && ir_times < IR_times)
                 {
                     ++ir_times;
                     printf("\n>>>> In IR times = %d\n, information", ir_times);
@@ -446,7 +456,7 @@ int main(int argc, char **argv)
                 printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
                 printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
                 printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
-                while (solver_r_l2_norm / solver_b_l2_norm >= 1e-8 && ir_times < 10)
+                while (solver_r_l2_norm / solver_b_l2_norm >= sys_rtol && ir_times < IR_times)
                 {
                     ++ir_times;
                     printf("\n>>>> In IR times = %d\n, information", ir_times);
@@ -518,7 +528,7 @@ int main(int argc, char **argv)
                 printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
                 printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
                 printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
-                while (solver_r_l2_norm / solver_b_l2_norm >= 1e-8 && ir_times < 10)
+                while (solver_r_l2_norm / solver_b_l2_norm >= sys_rtol && ir_times < IR_times)
                 {
                     ++ir_times;
                     printf("\n>>>> In IR times = %d\n, information", ir_times);
@@ -591,7 +601,7 @@ int main(int argc, char **argv)
                 printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
                 printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
                 printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
-                while (solver_r_l2_norm / solver_b_l2_norm >= 1e-8 && ir_times < 10)
+                while (solver_r_l2_norm / solver_b_l2_norm >= sys_rtol && ir_times < IR_times)
                 {
                     ++ir_times;
                     printf("\n>>>> In IR times = %d\n, information", ir_times);
@@ -710,3 +720,14 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
+/*
+ * command line
+ *     -file_mat        <path/to/mat>
+ *     -file_rhs        <path/to/rhs>
+ *     -type            <0/1/2>
+ *     -sys_type        <0/1>
+ *     -test_frequency  <int>
+ *     -ir_times        <int>
+ *     -sys_rtol        <double>
+ */
