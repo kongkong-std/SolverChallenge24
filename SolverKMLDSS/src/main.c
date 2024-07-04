@@ -128,12 +128,19 @@ int main(int argc, char **argv)
                     solver_r[index] = b[index] - solver_r[index]; // solver_r = b - Ax
                 }
                 solver_r_l2_norm = vec2norm(solver_r, n);
+                printf("\n>>>> before IR, information:\n");
+                printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
+                printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
+                printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
                 while (solver_r_l2_norm / solver_b_l2_norm >= 1e-8 && ir_times < 10)
                 {
                     ++ir_times;
-                    printf(">>>> IR times = %d\n", ir_times);
+                    printf("\n>>>> In IR times = %d\n, information", ir_times);
+
                     KMLRealSolverRHSCreate(&mysolver, n, solver_r);
                     KMLRealSolverSOLCreate(&mysolver, n, solver_e);
+                    KmlSolverMatrixSetValue(mysolver.dss_solver_b, solver_r);
+                    KmlSolverMatrixSetValue(mysolver.dss_solver_x, solver_e);
                     KMLRealSolverSolve(&mysolver);
 
                     // updating solution
@@ -142,18 +149,25 @@ int main(int argc, char **argv)
                         x[index] += solver_e[index];
                     }
 
-                    // updating residual
-                    spmv(n, row_ptr, col_idx, val, x, solver_r); // Ax
+                    spmv(n, row_ptr, col_idx, val, x, solver_r);
                     for (int index = 0; index < n; ++index)
                     {
-                        solver_r[index] = b[index] - solver_r[index]; // solver_r = b - Ax
+                        solver_r[index] = b[index] - solver_r[index];
                     }
                     solver_r_l2_norm = vec2norm(solver_r, n);
+                    printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
+                    printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
+                    printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
                 }
+                printf("\n>>>> after IR, information:\n");
+                printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
+                printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
+                printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
 
-                // regeneration rhs, sol
                 KMLRealSolverRHSCreate(&mysolver, n, b);
                 KMLRealSolverSOLCreate(&mysolver, n, x);
+                KmlSolverMatrixSetValue(mysolver.dss_solver_b, b);
+                KmlSolverMatrixSetValue(mysolver.dss_solver_x, x);
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
@@ -174,12 +188,19 @@ int main(int argc, char **argv)
                     solver_r[index] = b[index] - solver_r[index]; // solver_r = b - Ax
                 }
                 solver_r_l2_norm = vec2norm(solver_r, n);
+                printf("\n>>>> before IR, information:\n");
+                printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
+                printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
+                printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
                 while (solver_r_l2_norm / solver_b_l2_norm >= 1e-8 && ir_times < 10)
                 {
                     ++ir_times;
-                    printf(">>>> IR times = %d\n", ir_times);
+                    printf("\n>>>> In IR times = %d\n, information", ir_times);
+
                     KMLRealSolverRHSCreate(&mysolver, n, solver_r);
                     KMLRealSolverSOLCreate(&mysolver, n, solver_e);
+                    KmlSolverMatrixSetValue(mysolver.dss_solver_b, solver_r);
+                    KmlSolverMatrixSetValue(mysolver.dss_solver_x, solver_e);
                     KMLRealSolverSolve(&mysolver);
 
                     // updating solution
@@ -188,18 +209,25 @@ int main(int argc, char **argv)
                         x[index] += solver_e[index];
                     }
 
-                    // updating residual
-                    spmv(n, row_ptr, col_idx, val, x, solver_r); // Ax
+                    spmv(n, row_ptr, col_idx, val, x, solver_r);
                     for (int index = 0; index < n; ++index)
                     {
-                        solver_r[index] = b[index] - solver_r[index]; // solver_r = b - Ax
+                        solver_r[index] = b[index] - solver_r[index];
                     }
                     solver_r_l2_norm = vec2norm(solver_r, n);
+                    printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
+                    printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
+                    printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
                 }
+                printf("\n>>>> after IR, information:\n");
+                printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
+                printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
+                printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
 
-                // regeneration rhs, sol
                 KMLRealSolverRHSCreate(&mysolver, n, b);
                 KMLRealSolverSOLCreate(&mysolver, n, x);
+                KmlSolverMatrixSetValue(mysolver.dss_solver_b, b);
+                KmlSolverMatrixSetValue(mysolver.dss_solver_x, x);
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
@@ -220,12 +248,19 @@ int main(int argc, char **argv)
                     solver_r[index] = b[index] - solver_r[index]; // solver_r = b - Ax
                 }
                 solver_r_l2_norm = vec2norm(solver_r, n);
+                printf("\n>>>> before IR, information:\n");
+                printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
+                printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
+                printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
                 while (solver_r_l2_norm / solver_b_l2_norm >= 1e-8 && ir_times < 10)
                 {
                     ++ir_times;
-                    printf(">>>> IR times = %d\n", ir_times);
+                    printf("\n>>>> In IR times = %d\n, information", ir_times);
+
                     KMLRealSolverRHSCreate(&mysolver, n, solver_r);
                     KMLRealSolverSOLCreate(&mysolver, n, solver_e);
+                    KmlSolverMatrixSetValue(mysolver.dss_solver_b, solver_r);
+                    KmlSolverMatrixSetValue(mysolver.dss_solver_x, solver_e);
                     KMLRealSolverSolve(&mysolver);
 
                     // updating solution
@@ -234,18 +269,25 @@ int main(int argc, char **argv)
                         x[index] += solver_e[index];
                     }
 
-                    // updating residual
-                    spmv(n, row_ptr, col_idx, val, x, solver_r); // Ax
+                    spmv(n, row_ptr, col_idx, val, x, solver_r);
                     for (int index = 0; index < n; ++index)
                     {
-                        solver_r[index] = b[index] - solver_r[index]; // solver_r = b - Ax
+                        solver_r[index] = b[index] - solver_r[index];
                     }
                     solver_r_l2_norm = vec2norm(solver_r, n);
+                    printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
+                    printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
+                    printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
                 }
+                printf("\n>>>> after IR, information:\n");
+                printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
+                printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
+                printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
 
-                // regeneration rhs, sol
                 KMLRealSolverRHSCreate(&mysolver, n, b);
                 KMLRealSolverSOLCreate(&mysolver, n, x);
+                KmlSolverMatrixSetValue(mysolver.dss_solver_b, b);
+                KmlSolverMatrixSetValue(mysolver.dss_solver_x, x);
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
@@ -388,23 +430,35 @@ int main(int argc, char **argv)
                 KMLComplexSolverSolve(&mysolver);
 
                 // IR
+                for (int index = 0; index < n; ++index)
+                {
+                    x[index] = creal(kml_dss_solver_x[index]); // updating solution
+                    x_im[index] = cimag(kml_dss_solver_x[index]);
+                }
                 spmv_complex(n, row_ptr, col_idx, val, val_im, x, x_im, solver_r_re, solver_r_im); // Ax
                 for (int index = 0; index < n; ++index)
                 {
-                    solver_r_re[index] = b[index] - solver_r_re[index];    // solver_r = b - Ax
-                    solver_r_im[index] = b_im[index] - solver_r_im[index]; // solver_r = b - Ax
-
-                    kml_dss_solver_r[index] = solver_r_re[index] + solver_r_im[index] * _Complex_I;
+                    solver_r_re[index] = b[index] - solver_r_re[index]; // solver_r = b - Ax
+                    solver_r_im[index] = b_im[index] - solver_r_im[index];
                 }
                 vec2norm_complex(solver_r_re, solver_r_im, &solver_r_l2_norm, &solver_r_l2_norm_i, n);
+                printf("\n>>>> before IR, information:\n");
+                printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
+                printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
+                printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
                 while (solver_r_l2_norm / solver_b_l2_norm >= 1e-8 && ir_times < 10)
                 {
                     ++ir_times;
-                    printf(">>>> IR times = %d\n", ir_times);
+                    printf("\n>>>> In IR times = %d\n, information", ir_times);
 
-                    KMLComplexSolverRHSCreate(&mysolver, n, kml_dss_solver_r);
-                    KMLComplexSolverSOLCreate(&mysolver, n, kml_dss_solver_e);
-                    KMLComplexSolverSolve(&mysolver);
+                    for (int index = 0; index < n; ++index)
+                    {
+                        kml_dss_solver_r[index] = solver_r_re[index] + solver_r_im[index] * _Complex_I;
+                        kml_dss_solver_e[index] = solver_e_re[index] + solver_e_im[index] * _Complex_I;
+                    }
+                    KmlSolverMatrixSetValue(mysolver.dss_solver_b, kml_dss_solver_r);
+                    KmlSolverMatrixSetValue(mysolver.dss_solver_x, kml_dss_solver_e);
+                    KMLRealSolverSolve(&mysolver);
 
                     // updating solution
                     for (int index = 0; index < n; ++index)
@@ -414,21 +468,26 @@ int main(int argc, char **argv)
                         x_im[index] = cimag(kml_dss_solver_x[index]);
                     }
 
-                    // updating residual
-                    spmv_complex(n, row_ptr, col_idx, val, val_im, x, x_im, solver_r_re, solver_r_im); // Ax
+                    spmv_complex(n, row_ptr, col_idx, val, val_im, x, x_im, solver_r_re, solver_r_im);
                     for (int index = 0; index < n; ++index)
                     {
-                        solver_r_re[index] = b[index] - solver_r_re[index];    // solver_r = b - Ax
-                        solver_r_im[index] = b_im[index] - solver_r_im[index]; // solver_r = b - Ax
-
-                        kml_dss_solver_r[index] = solver_r_re[index] + solver_r_im[index] * _Complex_I;
+                        solver_r_re[index] = b[index] - solver_r_re[index];
+                        solver_r_im[index] = b_im[index] - solver_r_im[index];
                     }
                     vec2norm_complex(solver_r_re, solver_r_im, &solver_r_l2_norm, &solver_r_l2_norm_i, n);
+                    printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
+                    printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
+                    printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
                 }
+                printf("\n>>>> after IR, information:\n");
+                printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
+                printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
+                printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
 
-                // regeneration rhs, sol
                 KMLComplexSolverRHSCreate(&mysolver, n, kml_dss_solver_b);
                 KMLComplexSolverSOLCreate(&mysolver, n, kml_dss_solver_x);
+                KmlSolverMatrixSetValue(mysolver.dss_solver_b, kml_dss_solver_b);
+                KmlSolverMatrixSetValue(mysolver.dss_solver_x, kml_dss_solver_x);
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
@@ -443,23 +502,35 @@ int main(int argc, char **argv)
                 KMLComplexSolverSolve(&mysolver);
 
                 // IR
+                for (int index = 0; index < n; ++index)
+                {
+                    x[index] = creal(kml_dss_solver_x[index]); // updating solution
+                    x_im[index] = cimag(kml_dss_solver_x[index]);
+                }
                 spmv_complex(n, row_ptr, col_idx, val, val_im, x, x_im, solver_r_re, solver_r_im); // Ax
                 for (int index = 0; index < n; ++index)
                 {
-                    solver_r_re[index] = b[index] - solver_r_re[index];    // solver_r = b - Ax
-                    solver_r_im[index] = b_im[index] - solver_r_im[index]; // solver_r = b - Ax
-
-                    kml_dss_solver_r[index] = solver_r_re[index] + solver_r_im[index] * _Complex_I;
+                    solver_r_re[index] = b[index] - solver_r_re[index]; // solver_r = b - Ax
+                    solver_r_im[index] = b_im[index] - solver_r_im[index];
                 }
                 vec2norm_complex(solver_r_re, solver_r_im, &solver_r_l2_norm, &solver_r_l2_norm_i, n);
+                printf("\n>>>> before IR, information:\n");
+                printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
+                printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
+                printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
                 while (solver_r_l2_norm / solver_b_l2_norm >= 1e-8 && ir_times < 10)
                 {
                     ++ir_times;
-                    printf(">>>> IR times = %d\n", ir_times);
+                    printf("\n>>>> In IR times = %d\n, information", ir_times);
 
-                    KMLComplexSolverRHSCreate(&mysolver, n, kml_dss_solver_r);
-                    KMLComplexSolverSOLCreate(&mysolver, n, kml_dss_solver_e);
-                    KMLComplexSolverSolve(&mysolver);
+                    for (int index = 0; index < n; ++index)
+                    {
+                        kml_dss_solver_r[index] = solver_r_re[index] + solver_r_im[index] * _Complex_I;
+                        kml_dss_solver_e[index] = solver_e_re[index] + solver_e_im[index] * _Complex_I;
+                    }
+                    KmlSolverMatrixSetValue(mysolver.dss_solver_b, kml_dss_solver_r);
+                    KmlSolverMatrixSetValue(mysolver.dss_solver_x, kml_dss_solver_e);
+                    KMLRealSolverSolve(&mysolver);
 
                     // updating solution
                     for (int index = 0; index < n; ++index)
@@ -469,21 +540,26 @@ int main(int argc, char **argv)
                         x_im[index] = cimag(kml_dss_solver_x[index]);
                     }
 
-                    // updating residual
-                    spmv_complex(n, row_ptr, col_idx, val, val_im, x, x_im, solver_r_re, solver_r_im); // Ax
+                    spmv_complex(n, row_ptr, col_idx, val, val_im, x, x_im, solver_r_re, solver_r_im);
                     for (int index = 0; index < n; ++index)
                     {
-                        solver_r_re[index] = b[index] - solver_r_re[index];    // solver_r = b - Ax
-                        solver_r_im[index] = b_im[index] - solver_r_im[index]; // solver_r = b - Ax
-
-                        kml_dss_solver_r[index] = solver_r_re[index] + solver_r_im[index] * _Complex_I;
+                        solver_r_re[index] = b[index] - solver_r_re[index];
+                        solver_r_im[index] = b_im[index] - solver_r_im[index];
                     }
                     vec2norm_complex(solver_r_re, solver_r_im, &solver_r_l2_norm, &solver_r_l2_norm_i, n);
+                    printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
+                    printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
+                    printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
                 }
+                printf("\n>>>> after IR, information:\n");
+                printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
+                printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
+                printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
 
-                // regeneration rhs, sol
                 KMLComplexSolverRHSCreate(&mysolver, n, kml_dss_solver_b);
                 KMLComplexSolverSOLCreate(&mysolver, n, kml_dss_solver_x);
+                KmlSolverMatrixSetValue(mysolver.dss_solver_b, kml_dss_solver_b);
+                KmlSolverMatrixSetValue(mysolver.dss_solver_x, kml_dss_solver_x);
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
@@ -499,23 +575,35 @@ int main(int argc, char **argv)
                 KMLComplexSolverSolve(&mysolver);
 
                 // IR
+                for (int index = 0; index < n; ++index)
+                {
+                    x[index] = creal(kml_dss_solver_x[index]); // updating solution
+                    x_im[index] = cimag(kml_dss_solver_x[index]);
+                }
                 spmv_complex(n, row_ptr, col_idx, val, val_im, x, x_im, solver_r_re, solver_r_im); // Ax
                 for (int index = 0; index < n; ++index)
                 {
-                    solver_r_re[index] = b[index] - solver_r_re[index];    // solver_r = b - Ax
-                    solver_r_im[index] = b_im[index] - solver_r_im[index]; // solver_r = b - Ax
-
-                    kml_dss_solver_r[index] = solver_r_re[index] + solver_r_im[index] * _Complex_I;
+                    solver_r_re[index] = b[index] - solver_r_re[index]; // solver_r = b - Ax
+                    solver_r_im[index] = b_im[index] - solver_r_im[index];
                 }
                 vec2norm_complex(solver_r_re, solver_r_im, &solver_r_l2_norm, &solver_r_l2_norm_i, n);
+                printf("\n>>>> before IR, information:\n");
+                printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
+                printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
+                printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
                 while (solver_r_l2_norm / solver_b_l2_norm >= 1e-8 && ir_times < 10)
                 {
                     ++ir_times;
-                    printf(">>>> IR times = %d\n", ir_times);
+                    printf("\n>>>> In IR times = %d\n, information", ir_times);
 
-                    KMLComplexSolverRHSCreate(&mysolver, n, kml_dss_solver_r);
-                    KMLComplexSolverSOLCreate(&mysolver, n, kml_dss_solver_e);
-                    KMLComplexSolverSolve(&mysolver);
+                    for (int index = 0; index < n; ++index)
+                    {
+                        kml_dss_solver_r[index] = solver_r_re[index] + solver_r_im[index] * _Complex_I;
+                        kml_dss_solver_e[index] = solver_e_re[index] + solver_e_im[index] * _Complex_I;
+                    }
+                    KmlSolverMatrixSetValue(mysolver.dss_solver_b, kml_dss_solver_r);
+                    KmlSolverMatrixSetValue(mysolver.dss_solver_x, kml_dss_solver_e);
+                    KMLRealSolverSolve(&mysolver);
 
                     // updating solution
                     for (int index = 0; index < n; ++index)
@@ -525,21 +613,26 @@ int main(int argc, char **argv)
                         x_im[index] = cimag(kml_dss_solver_x[index]);
                     }
 
-                    // updating residual
-                    spmv_complex(n, row_ptr, col_idx, val, val_im, x, x_im, solver_r_re, solver_r_im); // Ax
+                    spmv_complex(n, row_ptr, col_idx, val, val_im, x, x_im, solver_r_re, solver_r_im);
                     for (int index = 0; index < n; ++index)
                     {
-                        solver_r_re[index] = b[index] - solver_r_re[index];    // solver_r = b - Ax
-                        solver_r_im[index] = b_im[index] - solver_r_im[index]; // solver_r = b - Ax
-
-                        kml_dss_solver_r[index] = solver_r_re[index] + solver_r_im[index] * _Complex_I;
+                        solver_r_re[index] = b[index] - solver_r_re[index];
+                        solver_r_im[index] = b_im[index] - solver_r_im[index];
                     }
                     vec2norm_complex(solver_r_re, solver_r_im, &solver_r_l2_norm, &solver_r_l2_norm_i, n);
+                    printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
+                    printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
+                    printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
                 }
+                printf("\n>>>> after IR, information:\n");
+                printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
+                printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
+                printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
 
-                // regeneration rhs, sol
                 KMLComplexSolverRHSCreate(&mysolver, n, kml_dss_solver_b);
                 KMLComplexSolverSOLCreate(&mysolver, n, kml_dss_solver_x);
+                KmlSolverMatrixSetValue(mysolver.dss_solver_b, kml_dss_solver_b);
+                KmlSolverMatrixSetValue(mysolver.dss_solver_x, kml_dss_solver_x);
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
