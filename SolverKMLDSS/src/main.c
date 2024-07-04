@@ -458,7 +458,7 @@ int main(int argc, char **argv)
                     }
                     KmlSolverMatrixSetValue(mysolver.dss_solver_b, kml_dss_solver_r);
                     KmlSolverMatrixSetValue(mysolver.dss_solver_x, kml_dss_solver_e);
-                    KMLRealSolverSolve(&mysolver);
+                    KMLComplexSolverSolve(&mysolver);
 
                     // updating solution
                     for (int index = 0; index < n; ++index)
@@ -530,7 +530,7 @@ int main(int argc, char **argv)
                     }
                     KmlSolverMatrixSetValue(mysolver.dss_solver_b, kml_dss_solver_r);
                     KmlSolverMatrixSetValue(mysolver.dss_solver_x, kml_dss_solver_e);
-                    KMLRealSolverSolve(&mysolver);
+                    KMLComplexSolverSolve(&mysolver);
 
                     // updating solution
                     for (int index = 0; index < n; ++index)
@@ -603,7 +603,7 @@ int main(int argc, char **argv)
                     }
                     KmlSolverMatrixSetValue(mysolver.dss_solver_b, kml_dss_solver_r);
                     KmlSolverMatrixSetValue(mysolver.dss_solver_x, kml_dss_solver_e);
-                    KMLRealSolverSolve(&mysolver);
+                    KMLComplexSolverSolve(&mysolver);
 
                     // updating solution
                     for (int index = 0; index < n; ++index)
