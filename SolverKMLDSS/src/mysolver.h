@@ -59,9 +59,14 @@ typedef struct my_solver_complex
 } MySolverComplex;
 
 //! real system
-void KMLRealSolverInitialize(MySolver * /*solver type*/, double * /*sol*/, int /*size of linear system*/,
-                             int * /*row ptr in csr*/, int * /*col idx in csr*/,
-                             double * /*val in csr*/, double * /*rhs*/);
+void KMLRealSolverMatrixCreate(MySolver * /*solver type*/, int /*size of linear system*/,
+                               int * /*row ptr in csr*/, int * /*col idx in csr*/,
+                               double * /*val in csr*/);
+void KMLRealSolverRHSCreate(MySolver * /*solver type*/, int /*size of linear system*/,
+                            double * /*rhs*/);
+void KMLRealSolverSOLCreate(MySolver * /*solver type*/, int /*size of linear system*/,
+                            double * /*sol*/);
+void KMLRealSolverInitialize(MySolver * /*solver type*/);
 void KMLRealSolverAnalyze(MySolver * /*solver type*/);
 void KMLRealSolverFactor(MySolver * /*solver type*/);
 void KMLRealSolverSolve(MySolver * /*solver type*/);
@@ -69,10 +74,14 @@ void KMLRealSolverQuery(MySolver * /*solver type*/);
 void KMLRealSolverClean(MySolver * /*solver type*/);
 
 //! complex system
-void KMLComplexSolverInitialize(MySolverComplex * /*solver type*/, kml_complex_double * /*double complex sol*/,
-                                int /*size of linear system*/, int * /*row prt in csr*/, int * /*col idx in csr*/,
-                                kml_complex_double * /*double complex val in csr*/,
-                                kml_complex_double * /*double complex rhs*/);
+void KMLComplexSolverMatrixCreate(MySolverComplex * /*solver type*/, int /*size of linear system*/,
+                                  int * /*row prt in csr*/, int * /*col idx in csr*/,
+                                  kml_complex_double * /*double complex val in csr*/);
+void KMLComplexSolverRHSCreate(MySolverComplex * /*solver type*/, int /*size of linear system*/,
+                               kml_complex_double * /*double complex rhs*/);
+void KMLComplexSolverSOLCreate(MySolverComplex * /*solver type*/, int /*size of linear system*/,
+                               kml_complex_double * /*double complex sol*/);
+void KMLComplexSolverInitialize(MySolverComplex * /*solver type*/);
 void KMLComplexSolverAnalyze(MySolverComplex * /*solver type*/);
 void KMLComplexSolverFactor(MySolverComplex * /*solver type*/);
 void KMLComplexSolverSolve(MySolverComplex * /*solver type*/);

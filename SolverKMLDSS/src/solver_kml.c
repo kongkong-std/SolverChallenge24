@@ -1,8 +1,7 @@
 #include "mysolver.h"
 
-void KMLRealSolverInitialize(MySolver *solver, double *sol, int n,
-                             int *row_ptr, int *col_idx,
-                             double *val, double *rhs)
+void KMLRealSolverMatrixCreate(MySolver *solver, int n,
+                               int *row_ptr, int *col_idx, double *val)
 {
     int ierr = 0;
 
@@ -25,6 +24,11 @@ void KMLRealSolverInitialize(MySolver *solver, double *sol, int n,
         exit(EXIT_FAILURE);
     }
     printf(">>>> kml-dss matrix has been assembled!!!\n\n");
+}
+
+void KMLRealSolverRHSCreate(MySolver *solver, int n, double *rhs)
+{
+    int ierr = 0;
 
     // rhs data process
     printf(">>>> kml-dss rhs vector begin assembling...\n");
@@ -44,6 +48,11 @@ void KMLRealSolverInitialize(MySolver *solver, double *sol, int n,
         exit(EXIT_FAILURE);
     }
     printf(">>>> kml-dss rhs vector has been assembled!!!\n\n");
+}
+
+void KMLRealSolverSOLCreate(MySolver *solver, int n, double *sol)
+{
+    int ierr = 0;
 
     // sol data process
     printf(">>>> kml-dss sol vector begin assembling...\n ");
@@ -63,6 +72,11 @@ void KMLRealSolverInitialize(MySolver *solver, double *sol, int n,
         exit(EXIT_FAILURE);
     }
     printf(">>>> kml-dss sol vector has been assembled!!!\n\n");
+}
+
+void KMLRealSolverInitialize(MySolver *solver)
+{
+    int ierr = 0;
 
     // Init solver
     printf(">>>> kml-dss solver begin to initialize...\n");
@@ -202,10 +216,8 @@ void KMLRealSolverClean(MySolver *solver)
     printf(">>>> kml-dss sol has beed destroyed!!!\n\n");
 }
 
-void KMLComplexSolverInitialize(MySolverComplex *solver, kml_complex_double *sol,
-                                int n, int *row_ptr, int *col_idx,
-                                kml_complex_double *val,
-                                kml_complex_double *rhs)
+void KMLComplexSolverMatrixCreate(MySolverComplex *solver, int n,
+                                  int *row_ptr, int *col_idx, kml_complex_double *val)
 {
     int ierr = 0;
 
@@ -228,6 +240,12 @@ void KMLComplexSolverInitialize(MySolverComplex *solver, kml_complex_double *sol
         exit(EXIT_FAILURE);
     }
     printf(">>>> kml-dss matrix has been assembled!!!\n\n");
+}
+
+void KMLComplexSolverRHSCreate(MySolverComplex *solver, int n,
+                               kml_complex_double *rhs)
+{
+    int ierr = 0;
 
     // rhs data process
     printf(">>>> kml-dss rhs vector begin assembling...\n");
@@ -247,6 +265,12 @@ void KMLComplexSolverInitialize(MySolverComplex *solver, kml_complex_double *sol
         exit(EXIT_FAILURE);
     }
     printf(">>>> kml-dss rhs vector has been assembled!!!\n\n");
+}
+
+void KMLComplexSolverSOLCreate(MySolverComplex *solver, int n,
+                               kml_complex_double *sol)
+{
+    int ierr = 0;
 
     // sol data process
     printf(">>>> kml-dss sol vector begin assembling...\n ");
@@ -266,6 +290,11 @@ void KMLComplexSolverInitialize(MySolverComplex *solver, kml_complex_double *sol
         exit(EXIT_FAILURE);
     }
     printf(">>>> kml-dss sol vector has been assembled!!!\n\n");
+}
+
+void KMLComplexSolverInitialize(MySolverComplex *solver)
+{
+    int ierr = 0;
 
     // Init solver
     printf(">>>> kml-dss solver begin to initialize...\n");

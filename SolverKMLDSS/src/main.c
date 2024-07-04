@@ -86,7 +86,31 @@ int main(int argc, char **argv)
         printf(">>>> begin to call kml-dss solver...\n");
         // direct solver sample
         MySolver mysolver;
-        KMLRealSolverInitialize(&mysolver, x, n, row_ptr, col_idx, val, b);
+        KMLRealSolverMatrixCreate(&mysolver, n, row_ptr, col_idx, val);
+        KMLRealSolverRHSCreate(&mysolver, n, b);
+        KMLRealSolverSOLCreate(&mysolver, n, x);
+        KMLRealSolverInitialize(&mysolver);
+
+        // residual and error definition
+        /*
+         * 1. solver_r = b - Ax
+         * 2. A solver_e = solver_r
+         * 3. x = x + solver_e
+         */
+        double *solver_r = NULL, *solver_e = NULL;
+        if ((solver_r = (double *)malloc(sizeof(double) * n)) == NULL ||
+            (solver_e = (double *)malloc(sizeof(double) * n)) == NULL)
+        {
+            fprintf(stderr, "Memory allocation failed - \'residual and error vector\'\n");
+            exit(EXIT_FAILURE);
+        }
+
+        // initialize solver_e
+        memset(solver_e, 0.0, sizeof(double) * n);
+
+        double solver_r_l2_norm = 0., solver_b_l2_norm = 0.;
+        solver_b_l2_norm = vec2norm(b, n);
+        int ir_times = 0;
 
         if (type == 0) // check end to end time
         {
@@ -96,6 +120,40 @@ int main(int argc, char **argv)
                 KMLRealSolverAnalyze(&mysolver);
                 KMLRealSolverFactor(&mysolver);
                 KMLRealSolverSolve(&mysolver);
+
+                // IR
+                spmv(n, row_ptr, col_idx, val, x, solver_r); // Ax
+                for (int index = 0; index < n; ++index)
+                {
+                    solver_r[index] = b[index] - solver_r[index]; // solver_r = b - Ax
+                }
+                solver_r_l2_norm = vec2norm(solver_r, n);
+                while (solver_r_l2_norm / solver_b_l2_norm >= 1e-8 && ir_times < 10)
+                {
+                    ++ir_times;
+                    printf(">>>> IR times = %d\n", ir_times);
+                    KMLRealSolverRHSCreate(&mysolver, n, solver_r);
+                    KMLRealSolverSOLCreate(&mysolver, n, solver_e);
+                    KMLRealSolverSolve(&mysolver);
+
+                    // updating solution
+                    for (int index = 0; index < n; ++index)
+                    {
+                        x[index] += solver_e[index];
+                    }
+
+                    // updating residual
+                    spmv(n, row_ptr, col_idx, val, x, solver_r); // Ax
+                    for (int index = 0; index < n; ++index)
+                    {
+                        solver_r[index] = b[index] - solver_r[index]; // solver_r = b - Ax
+                    }
+                    solver_r_l2_norm = vec2norm(solver_r, n);
+                }
+
+                // regeneration rhs, sol
+                KMLRealSolverRHSCreate(&mysolver, n, b);
+                KMLRealSolverSOLCreate(&mysolver, n, x);
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
@@ -108,6 +166,40 @@ int main(int argc, char **argv)
             {
                 KMLRealSolverFactor(&mysolver);
                 KMLRealSolverSolve(&mysolver);
+
+                // IR
+                spmv(n, row_ptr, col_idx, val, x, solver_r); // Ax
+                for (int index = 0; index < n; ++index)
+                {
+                    solver_r[index] = b[index] - solver_r[index]; // solver_r = b - Ax
+                }
+                solver_r_l2_norm = vec2norm(solver_r, n);
+                while (solver_r_l2_norm / solver_b_l2_norm >= 1e-8 && ir_times < 10)
+                {
+                    ++ir_times;
+                    printf(">>>> IR times = %d\n", ir_times);
+                    KMLRealSolverRHSCreate(&mysolver, n, solver_r);
+                    KMLRealSolverSOLCreate(&mysolver, n, solver_e);
+                    KMLRealSolverSolve(&mysolver);
+
+                    // updating solution
+                    for (int index = 0; index < n; ++index)
+                    {
+                        x[index] += solver_e[index];
+                    }
+
+                    // updating residual
+                    spmv(n, row_ptr, col_idx, val, x, solver_r); // Ax
+                    for (int index = 0; index < n; ++index)
+                    {
+                        solver_r[index] = b[index] - solver_r[index]; // solver_r = b - Ax
+                    }
+                    solver_r_l2_norm = vec2norm(solver_r, n);
+                }
+
+                // regeneration rhs, sol
+                KMLRealSolverRHSCreate(&mysolver, n, b);
+                KMLRealSolverSOLCreate(&mysolver, n, x);
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
@@ -120,9 +212,47 @@ int main(int argc, char **argv)
             for (int i = 0; i < test_frequency; i++)
             {
                 KMLRealSolverSolve(&mysolver);
+
+                // IR
+                spmv(n, row_ptr, col_idx, val, x, solver_r); // Ax
+                for (int index = 0; index < n; ++index)
+                {
+                    solver_r[index] = b[index] - solver_r[index]; // solver_r = b - Ax
+                }
+                solver_r_l2_norm = vec2norm(solver_r, n);
+                while (solver_r_l2_norm / solver_b_l2_norm >= 1e-8 && ir_times < 10)
+                {
+                    ++ir_times;
+                    printf(">>>> IR times = %d\n", ir_times);
+                    KMLRealSolverRHSCreate(&mysolver, n, solver_r);
+                    KMLRealSolverSOLCreate(&mysolver, n, solver_e);
+                    KMLRealSolverSolve(&mysolver);
+
+                    // updating solution
+                    for (int index = 0; index < n; ++index)
+                    {
+                        x[index] += solver_e[index];
+                    }
+
+                    // updating residual
+                    spmv(n, row_ptr, col_idx, val, x, solver_r); // Ax
+                    for (int index = 0; index < n; ++index)
+                    {
+                        solver_r[index] = b[index] - solver_r[index]; // solver_r = b - Ax
+                    }
+                    solver_r_l2_norm = vec2norm(solver_r, n);
+                }
+
+                // regeneration rhs, sol
+                KMLRealSolverRHSCreate(&mysolver, n, b);
+                KMLRealSolverSOLCreate(&mysolver, n, x);
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
+
+        // free ir
+        free(solver_r);
+        free(solver_e);
 
         KMLRealSolverQuery(&mysolver);
 
@@ -203,8 +333,50 @@ int main(int argc, char **argv)
             kml_dss_solver_val[index] = val[index] + val_im[index] * _Complex_I;
         }
 
-        KMLComplexSolverInitialize(&mysolver, kml_dss_solver_x, n,
-                                   row_ptr, col_idx, kml_dss_solver_val, kml_dss_solver_b);
+        KMLComplexSolverMatrixCreate(&mysolver, n, row_ptr, col_idx, kml_dss_solver_val);
+        KMLComplexSolverRHSCreate(&mysolver, n, kml_dss_solver_b);
+        KMLComplexSolverSOLCreate(&mysolver, n, kml_dss_solver_x);
+        KMLComplexSolverInitialize(&mysolver);
+
+        // residual and error definition
+        /*
+         * 1. solver_r = b - Ax
+         * 2. A solver_e = solver_r
+         * 3. x = x + solver_e
+         */
+        double *solver_r_re = NULL, *solver_r_im = NULL;
+        double *solver_e_re = NULL, *solver_e_im = NULL;
+
+        if ((solver_r_re = (double *)malloc(n * sizeof(double))) == NULL ||
+            (solver_r_im = (double *)malloc(n * sizeof(double))) == NULL ||
+            (solver_e_re = (double *)malloc(n * sizeof(double))) == NULL ||
+            (solver_e_im = (double *)malloc(n * sizeof(double))) == NULL)
+        {
+            fprintf(stderr, "Memory allocation failed - \'residual and error vector\'\n");
+            exit(EXIT_FAILURE);
+        }
+
+        // initialize solver_e
+        memset(solver_e_re, 0., n * sizeof(double));
+        memset(solver_e_im, 0., n * sizeof(double));
+
+        double solver_r_l2_norm = 0., solver_b_l2_norm = 0.;
+        double solver_r_l2_norm_i = 0., solver_b_l2_norm_i = 0.;
+        vec2norm_complex(b, b_im, &solver_b_l2_norm, &solver_b_l2_norm_i, n);
+        int ir_times = 0;
+
+        kml_complex_double *kml_dss_solver_r = NULL, *kml_dss_solver_e = NULL;
+        if ((kml_dss_solver_r = (kml_complex_double *)malloc(n * sizeof(kml_complex_double))) == NULL ||
+            (kml_dss_solver_e = (kml_complex_double *)malloc(n * sizeof(kml_complex_double))) == NULL)
+        {
+            fprintf(stderr, "Memory allocation failed - \'kmlcomplexdouble residual and error vector\'\n");
+            exit(EXIT_FAILURE);
+        }
+
+        for (int index = 0; index < n; ++index)
+        {
+            kml_dss_solver_e[index] = solver_e_re[index] + solver_e_im[index] * _Complex_I;
+        }
 
         if (type == 0) // check end to end time
         {
@@ -214,6 +386,49 @@ int main(int argc, char **argv)
                 KMLComplexSolverAnalyze(&mysolver);
                 KMLComplexSolverFactor(&mysolver);
                 KMLComplexSolverSolve(&mysolver);
+
+                // IR
+                spmv_complex(n, row_ptr, col_idx, val, val_im, x, x_im, solver_r_re, solver_r_im); // Ax
+                for (int index = 0; index < n; ++index)
+                {
+                    solver_r_re[index] = b[index] - solver_r_re[index];    // solver_r = b - Ax
+                    solver_r_im[index] = b_im[index] - solver_r_im[index]; // solver_r = b - Ax
+
+                    kml_dss_solver_r[index] = solver_r_re[index] + solver_r_im[index] * _Complex_I;
+                }
+                vec2norm_complex(solver_r_re, solver_r_im, &solver_r_l2_norm, &solver_r_l2_norm_i, n);
+                while (solver_r_l2_norm / solver_b_l2_norm >= 1e-8 && ir_times < 10)
+                {
+                    ++ir_times;
+                    printf(">>>> IR times = %d\n", ir_times);
+
+                    KMLComplexSolverRHSCreate(&mysolver, n, kml_dss_solver_r);
+                    KMLComplexSolverSOLCreate(&mysolver, n, kml_dss_solver_e);
+                    KMLComplexSolverSolve(&mysolver);
+
+                    // updating solution
+                    for (int index = 0; index < n; ++index)
+                    {
+                        kml_dss_solver_x[index] += kml_dss_solver_e[index];
+                        x[index] = creal(kml_dss_solver_x[index]);
+                        x_im[index] = cimag(kml_dss_solver_x[index]);
+                    }
+
+                    // updating residual
+                    spmv_complex(n, row_ptr, col_idx, val, val_im, x, x_im, solver_r_re, solver_r_im); // Ax
+                    for (int index = 0; index < n; ++index)
+                    {
+                        solver_r_re[index] = b[index] - solver_r_re[index];    // solver_r = b - Ax
+                        solver_r_im[index] = b_im[index] - solver_r_im[index]; // solver_r = b - Ax
+
+                        kml_dss_solver_r[index] = solver_r_re[index] + solver_r_im[index] * _Complex_I;
+                    }
+                    vec2norm_complex(solver_r_re, solver_r_im, &solver_r_l2_norm, &solver_r_l2_norm_i, n);
+                }
+
+                // regeneration rhs, sol
+                KMLComplexSolverRHSCreate(&mysolver, n, kml_dss_solver_b);
+                KMLComplexSolverSOLCreate(&mysolver, n, kml_dss_solver_x);
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
@@ -226,6 +441,49 @@ int main(int argc, char **argv)
             {
                 KMLComplexSolverFactor(&mysolver);
                 KMLComplexSolverSolve(&mysolver);
+
+                // IR
+                spmv_complex(n, row_ptr, col_idx, val, val_im, x, x_im, solver_r_re, solver_r_im); // Ax
+                for (int index = 0; index < n; ++index)
+                {
+                    solver_r_re[index] = b[index] - solver_r_re[index];    // solver_r = b - Ax
+                    solver_r_im[index] = b_im[index] - solver_r_im[index]; // solver_r = b - Ax
+
+                    kml_dss_solver_r[index] = solver_r_re[index] + solver_r_im[index] * _Complex_I;
+                }
+                vec2norm_complex(solver_r_re, solver_r_im, &solver_r_l2_norm, &solver_r_l2_norm_i, n);
+                while (solver_r_l2_norm / solver_b_l2_norm >= 1e-8 && ir_times < 10)
+                {
+                    ++ir_times;
+                    printf(">>>> IR times = %d\n", ir_times);
+
+                    KMLComplexSolverRHSCreate(&mysolver, n, kml_dss_solver_r);
+                    KMLComplexSolverSOLCreate(&mysolver, n, kml_dss_solver_e);
+                    KMLComplexSolverSolve(&mysolver);
+
+                    // updating solution
+                    for (int index = 0; index < n; ++index)
+                    {
+                        kml_dss_solver_x[index] += kml_dss_solver_e[index];
+                        x[index] = creal(kml_dss_solver_x[index]);
+                        x_im[index] = cimag(kml_dss_solver_x[index]);
+                    }
+
+                    // updating residual
+                    spmv_complex(n, row_ptr, col_idx, val, val_im, x, x_im, solver_r_re, solver_r_im); // Ax
+                    for (int index = 0; index < n; ++index)
+                    {
+                        solver_r_re[index] = b[index] - solver_r_re[index];    // solver_r = b - Ax
+                        solver_r_im[index] = b_im[index] - solver_r_im[index]; // solver_r = b - Ax
+
+                        kml_dss_solver_r[index] = solver_r_re[index] + solver_r_im[index] * _Complex_I;
+                    }
+                    vec2norm_complex(solver_r_re, solver_r_im, &solver_r_l2_norm, &solver_r_l2_norm_i, n);
+                }
+
+                // regeneration rhs, sol
+                KMLComplexSolverRHSCreate(&mysolver, n, kml_dss_solver_b);
+                KMLComplexSolverSOLCreate(&mysolver, n, kml_dss_solver_x);
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
@@ -239,9 +497,60 @@ int main(int argc, char **argv)
             for (int i = 0; i < test_frequency; i++)
             {
                 KMLComplexSolverSolve(&mysolver);
+
+                // IR
+                spmv_complex(n, row_ptr, col_idx, val, val_im, x, x_im, solver_r_re, solver_r_im); // Ax
+                for (int index = 0; index < n; ++index)
+                {
+                    solver_r_re[index] = b[index] - solver_r_re[index];    // solver_r = b - Ax
+                    solver_r_im[index] = b_im[index] - solver_r_im[index]; // solver_r = b - Ax
+
+                    kml_dss_solver_r[index] = solver_r_re[index] + solver_r_im[index] * _Complex_I;
+                }
+                vec2norm_complex(solver_r_re, solver_r_im, &solver_r_l2_norm, &solver_r_l2_norm_i, n);
+                while (solver_r_l2_norm / solver_b_l2_norm >= 1e-8 && ir_times < 10)
+                {
+                    ++ir_times;
+                    printf(">>>> IR times = %d\n", ir_times);
+
+                    KMLComplexSolverRHSCreate(&mysolver, n, kml_dss_solver_r);
+                    KMLComplexSolverSOLCreate(&mysolver, n, kml_dss_solver_e);
+                    KMLComplexSolverSolve(&mysolver);
+
+                    // updating solution
+                    for (int index = 0; index < n; ++index)
+                    {
+                        kml_dss_solver_x[index] += kml_dss_solver_e[index];
+                        x[index] = creal(kml_dss_solver_x[index]);
+                        x_im[index] = cimag(kml_dss_solver_x[index]);
+                    }
+
+                    // updating residual
+                    spmv_complex(n, row_ptr, col_idx, val, val_im, x, x_im, solver_r_re, solver_r_im); // Ax
+                    for (int index = 0; index < n; ++index)
+                    {
+                        solver_r_re[index] = b[index] - solver_r_re[index];    // solver_r = b - Ax
+                        solver_r_im[index] = b_im[index] - solver_r_im[index]; // solver_r = b - Ax
+
+                        kml_dss_solver_r[index] = solver_r_re[index] + solver_r_im[index] * _Complex_I;
+                    }
+                    vec2norm_complex(solver_r_re, solver_r_im, &solver_r_l2_norm, &solver_r_l2_norm_i, n);
+                }
+
+                // regeneration rhs, sol
+                KMLComplexSolverRHSCreate(&mysolver, n, kml_dss_solver_b);
+                KMLComplexSolverSOLCreate(&mysolver, n, kml_dss_solver_x);
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
+
+        // free ir
+        free(solver_r_re);
+        free(solver_r_im);
+        free(solver_e_re);
+        free(solver_e_im);
+        free(kml_dss_solver_r);
+        free(kml_dss_solver_e);
 
         KMLComplexSolverQuery(&mysolver);
 
