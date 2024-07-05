@@ -22,6 +22,8 @@ int main(int argc, char **argv)
     double *x = NULL, *x_im = NULL; // solution vector x, (x: real number, x_im: imaginary number)
     double *b = NULL, *b_im = NULL; // right-hand side vector b, (b: real number, b_im: imaginary number)
     double tt, time;
+    double tt_analyze, time_analyze; // time of analyze
+    double tt_factor, time_factor;   // time of factor
 
     char *filename_matrix;    // the filename of matrix A
     char *filename_b;         // the filename of right-hand side vector b
@@ -31,6 +33,8 @@ int main(int argc, char **argv)
     int sys_type = 0;         // type of algebraic systems, 0: real, 1: complex; default 0
     int IR_times = 10;        // max IR time
     double sys_rtol = 1e-8;   // relative residual tolerance
+    int n_thread = 32;        // number of threads
+    int n_thread_rdr = 8;     // number of threads of fill-in reduction
 
     /* ========================================== */
     // Step 0: Read command line argument
@@ -64,6 +68,14 @@ int main(int argc, char **argv)
         if (strstr("-sys_rtol", argv[index]))
         {
             sys_rtol = atof(argv[index + 1]);
+        }
+        if ((strstr("-n_thread", argv[index])))
+        {
+            n_thread = atoi(argv[index + 1]);
+        }
+        if ((strstr("-nt_rdr", argv[index])))
+        {
+            n_thread_rdr = atoi(argv[index + 1]);
         }
     }
 
@@ -99,7 +111,7 @@ int main(int argc, char **argv)
         KMLRealSolverMatrixCreate(&mysolver, n, row_ptr, col_idx, val);
         KMLRealSolverRHSCreate(&mysolver, n, b);
         KMLRealSolverSOLCreate(&mysolver, n, x);
-        KMLRealSolverInitialize(&mysolver);
+        KMLRealSolverInitialize(&mysolver, n_thread);
 
         // residual and error definition
         /*
@@ -127,8 +139,16 @@ int main(int argc, char **argv)
             tt = GetCurrentTime();
             for (int i = 0; i < test_frequency; i++)
             {
-                KMLRealSolverAnalyze(&mysolver);
+                tt_analyze = GetCurrentTime();
+                KMLRealSolverAnalyze(&mysolver, n_thread_rdr);
+                time_analyze = GetCurrentTime() - tt_analyze;
+                printf("---- time of analyze: %12.6lf ms\n", time_analyze);
+
+                tt_factor = GetCurrentTime();
                 KMLRealSolverFactor(&mysolver);
+                time_factor = GetCurrentTime() - tt_factor;
+                printf("---- time of factor: %12.6lf ms\n", time_factor);
+
                 KMLRealSolverSolve(&mysolver);
 
                 // IR
@@ -183,7 +203,7 @@ int main(int argc, char **argv)
         }
         else if (type == 1) // check direct_solver + solve time
         {
-            KMLRealSolverAnalyze(&mysolver);
+            KMLRealSolverAnalyze(&mysolver, n_thread_rdr);
 
             tt = GetCurrentTime();
             for (int i = 0; i < test_frequency; i++)
@@ -243,7 +263,7 @@ int main(int argc, char **argv)
         }
         else
         { // check solve time
-            KMLRealSolverAnalyze(&mysolver);
+            KMLRealSolverAnalyze(&mysolver, n_thread_rdr);
             KMLRealSolverFactor(&mysolver);
 
             tt = GetCurrentTime();
@@ -388,7 +408,7 @@ int main(int argc, char **argv)
         KMLComplexSolverMatrixCreate(&mysolver, n, row_ptr, col_idx, kml_dss_solver_val);
         KMLComplexSolverRHSCreate(&mysolver, n, kml_dss_solver_b);
         KMLComplexSolverSOLCreate(&mysolver, n, kml_dss_solver_x);
-        KMLComplexSolverInitialize(&mysolver);
+        KMLComplexSolverInitialize(&mysolver, n_thread);
 
         // residual and error definition
         /*
@@ -435,8 +455,16 @@ int main(int argc, char **argv)
             tt = GetCurrentTime();
             for (int i = 0; i < test_frequency; i++)
             {
-                KMLComplexSolverAnalyze(&mysolver);
+                tt_analyze = GetCurrentTime();
+                KMLComplexSolverAnalyze(&mysolver, n_thread_rdr);
+                time_analyze = GetCurrentTime() - tt_analyze;
+                printf("---- time of analyze: %12.6lf ms\n", time_analyze);
+
+                tt_factor = GetCurrentTime();
                 KMLComplexSolverFactor(&mysolver);
+                time_factor = GetCurrentTime() - tt_factor;
+                printf("---- time of factor: %12.6lf ms\n", time_factor);
+
                 KMLComplexSolverSolve(&mysolver);
 
                 // IR
@@ -503,7 +531,7 @@ int main(int argc, char **argv)
         }
         else if (type == 1) // check direct_solver + solve time
         {
-            KMLComplexSolverAnalyze(&mysolver);
+            KMLComplexSolverAnalyze(&mysolver, n_thread_rdr);
 
             tt = GetCurrentTime();
             for (int i = 0; i < test_frequency; i++)
@@ -576,7 +604,7 @@ int main(int argc, char **argv)
         else
         { // check solve time
 
-            KMLComplexSolverAnalyze(&mysolver);
+            KMLComplexSolverAnalyze(&mysolver, n_thread_rdr);
             KMLComplexSolverFactor(&mysolver);
 
             tt = GetCurrentTime();
@@ -730,4 +758,6 @@ int main(int argc, char **argv)
  *     -test_frequency  <int>
  *     -ir_times        <int>
  *     -sys_rtol        <double>
+ *     -n_thread        <int>
+ *     -nt_rdr          <int>
  */

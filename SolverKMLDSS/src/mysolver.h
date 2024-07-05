@@ -66,8 +66,8 @@ void KMLRealSolverRHSCreate(MySolver * /*solver type*/, int /*size of linear sys
                             double * /*rhs*/);
 void KMLRealSolverSOLCreate(MySolver * /*solver type*/, int /*size of linear system*/,
                             double * /*sol*/);
-void KMLRealSolverInitialize(MySolver * /*solver type*/);
-void KMLRealSolverAnalyze(MySolver * /*solver type*/);
+void KMLRealSolverInitialize(MySolver * /*solver type*/, int /*number of threads*/);
+void KMLRealSolverAnalyze(MySolver * /*solver type*/, int /*number of threads of fill-in reduction*/);
 void KMLRealSolverFactor(MySolver * /*solver type*/);
 void KMLRealSolverSolve(MySolver * /*solver type*/);
 void KMLRealSolverQuery(MySolver * /*solver type*/);
@@ -81,8 +81,8 @@ void KMLComplexSolverRHSCreate(MySolverComplex * /*solver type*/, int /*size of 
                                kml_complex_double * /*double complex rhs*/);
 void KMLComplexSolverSOLCreate(MySolverComplex * /*solver type*/, int /*size of linear system*/,
                                kml_complex_double * /*double complex sol*/);
-void KMLComplexSolverInitialize(MySolverComplex * /*solver type*/);
-void KMLComplexSolverAnalyze(MySolverComplex * /*solver type*/);
+void KMLComplexSolverInitialize(MySolverComplex * /*solver type*/, int /*number of threads*/);
+void KMLComplexSolverAnalyze(MySolverComplex * /*solver type*/, int /*number of threads of fill-in reduction*/);
 void KMLComplexSolverFactor(MySolverComplex * /*solver type*/);
 void KMLComplexSolverSolve(MySolverComplex * /*solver type*/);
 void KMLComplexSolverQuery(MySolverComplex * /*solver type*/);

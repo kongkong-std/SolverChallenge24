@@ -74,7 +74,7 @@ void KMLRealSolverSOLCreate(MySolver *solver, int n, double *sol)
     printf(">>>> kml-dss sol vector has been assembled!!!\n\n");
 }
 
-void KMLRealSolverInitialize(MySolver *solver)
+void KMLRealSolverInitialize(MySolver *solver, int n_thread)
 {
     int ierr = 0;
 
@@ -82,7 +82,7 @@ void KMLRealSolverInitialize(MySolver *solver)
     printf(">>>> kml-dss solver begin to initialize...\n");
     (solver->dss_solver_init_option).fieldMask = KMLDSS_INIT_OPTION_BWR_MODE | KMLDSS_INIT_OPTION_NTHREADS;
     (solver->dss_solver_init_option).bwrMode = KMLDSS_BWR_OFF;
-    (solver->dss_solver_init_option).nThreads = 32;
+    (solver->dss_solver_init_option).nThreads = n_thread;
     ierr = KmlDssInit(&(solver->dss_solver), &(solver->dss_solver_init_option));
     if (ierr != KMLSS_NO_ERROR)
     {
@@ -92,7 +92,7 @@ void KMLRealSolverInitialize(MySolver *solver)
     printf(">>>> kml-dss solver has been initialized!!!\n\n");
 }
 
-void KMLRealSolverAnalyze(MySolver *solver)
+void KMLRealSolverAnalyze(MySolver *solver, int n_thread_rdr)
 {
     int ierr = 0;
 
@@ -103,7 +103,7 @@ void KMLRealSolverAnalyze(MySolver *solver)
                                                     KMLDSS_ANALYZE_OPTION_NTHREADS_RDR;
     (solver->dss_solver_analyze_option).matchingType = KMLDSS_MATCHING_OFF;
     (solver->dss_solver_analyze_option).rdrType = KMLDSS_RDR_KRDR;
-    (solver->dss_solver_analyze_option).nThreadsRdr = 8;
+    (solver->dss_solver_analyze_option).nThreadsRdr = n_thread_rdr;
     ierr = KmlDssAnalyze(solver->dss_solver, solver->dss_solver_a, &(solver->dss_solver_analyze_option));
     if (ierr != KMLSS_NO_ERROR)
     {
@@ -292,7 +292,7 @@ void KMLComplexSolverSOLCreate(MySolverComplex *solver, int n,
     printf(">>>> kml-dss sol vector has been assembled!!!\n\n");
 }
 
-void KMLComplexSolverInitialize(MySolverComplex *solver)
+void KMLComplexSolverInitialize(MySolverComplex *solver, int n_thread)
 {
     int ierr = 0;
 
@@ -300,7 +300,7 @@ void KMLComplexSolverInitialize(MySolverComplex *solver)
     printf(">>>> kml-dss solver begin to initialize...\n");
     (solver->dss_solver_init_option).fieldMask = KMLDSS_INIT_OPTION_BWR_MODE | KMLDSS_INIT_OPTION_NTHREADS;
     (solver->dss_solver_init_option).bwrMode = KMLDSS_BWR_OFF;
-    (solver->dss_solver_init_option).nThreads = 32;
+    (solver->dss_solver_init_option).nThreads = n_thread;
     ierr = KmlDssInit(&(solver->dss_solver), &(solver->dss_solver_init_option));
     if (ierr != KMLSS_NO_ERROR)
     {
@@ -310,7 +310,7 @@ void KMLComplexSolverInitialize(MySolverComplex *solver)
     printf(">>>> kml-dss solver has been initialized!!!\n\n");
 }
 
-void KMLComplexSolverAnalyze(MySolverComplex *solver)
+void KMLComplexSolverAnalyze(MySolverComplex *solver, int n_thread_rdr)
 {
     int ierr = 0;
 
@@ -321,7 +321,7 @@ void KMLComplexSolverAnalyze(MySolverComplex *solver)
                                                     KMLDSS_ANALYZE_OPTION_NTHREADS_RDR;
     (solver->dss_solver_analyze_option).matchingType = KMLDSS_MATCHING_OFF;
     (solver->dss_solver_analyze_option).rdrType = KMLDSS_RDR_KRDR;
-    (solver->dss_solver_analyze_option).nThreadsRdr = 8;
+    (solver->dss_solver_analyze_option).nThreadsRdr = n_thread_rdr;
     ierr = KmlDssAnalyze(solver->dss_solver, solver->dss_solver_a, &(solver->dss_solver_analyze_option));
     if (ierr != KMLSS_NO_ERROR)
     {
