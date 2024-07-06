@@ -170,6 +170,8 @@ int main(int argc, char **argv)
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
+        SolverPetscSolutionFileIO(&mysolver);
+        SolverPetscDestroy(&mysolver);
     }
 #endif // ITERATIVE_SOLVER
 

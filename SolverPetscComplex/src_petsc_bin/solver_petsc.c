@@ -113,6 +113,25 @@ void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "|| r ||_2 / || b ||_2 = %021.16le\n", r_norm_2 / b_norm_2));
 }
 
+void SolverPetscSolutionFileIO(MySolver *mysolver)
+{
+    PetscViewer viewer;
+    PetscInt n_solver_x = 0;
+    const PetscScalar *array_solver_x;
+    PetscCall(VecGetSize(mysolver->solver_x, &n_solver_x));
+    PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, "answer_x.txt", &viewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "%d\n", n_solver_x));
+    PetscCall(VecGetArrayRead(mysolver->solver_x, &array_solver_x));
+    for (int index = 0; index < n_solver_x; ++index)
+    {
+        PetscCall(PetscViewerASCIIPrintf(viewer, "%021.16le\t%021.16le\n",
+                                         PetscRealPart(array_solver_x[index]),
+                                         PetscImaginaryPart(array_solver_x[index])));
+    }
+    PetscCall(VecRestoreArrayRead(mysolver->solver_x, &array_solver_x));
+    PetscCall(PetscViewerDestroy(&viewer));
+}
+
 void SolverPetscDestroy(MySolver *mysolver)
 {
     PetscCall(KSPDestroy(&(mysolver->ksp)));

@@ -54,6 +54,11 @@ void SolverPetscSolve(int argc, char **argv, MySolver *mysolver);
 void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver);
 
 /*
+* solver solution file io
+*/
+void SolverPetscSolutionFileIO(MySolver *);
+
+/*
  * solver destroy
  */
 void SolverPetscDestroy(MySolver *);
