@@ -31,24 +31,6 @@ int main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-#if 0
-    for (int index = 0; index < argc; ++index)
-    {
-        if (strstr("-sys_type", argv[index]))
-        {
-            sys_type = atoi(argv[index + 1]);
-        }
-        if (strstr("-type", argv[index]))
-        {
-            type = atoi(argv[index + 1]);
-        }
-        if (strstr("-test_frequency", argv[index]))
-        {
-            test_frequency = atoi(argv[index + 1]);
-        }
-    }
-#endif
-
     PetscFunctionBeginUser;
 
     PetscCall(PetscInitialize(&argc, &argv, (char *)0, NULL));
@@ -170,6 +152,8 @@ int main(int argc, char **argv)
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
+        SolverPetscSolutionFileIO(&mysolver);
+        SolverPetscDestroy(&mysolver);
     }
 #endif // ITERATIVE_SOLVER
 
@@ -177,7 +161,7 @@ int main(int argc, char **argv)
     // Step 3: Check time, memory and correctness
     /* ========================================== */
     // check the memory
-    // mem_usage();
+    mem_usage();
 
     if (myrank == 0)
     {
