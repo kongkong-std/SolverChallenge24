@@ -35,7 +35,6 @@ void print_help()
     fprintf(stdout, "sys_type:       type of algebraic systems, 0: real, 1: complex; default 0\n");
 }
 
-// Multiply a csr matrix with a vector x, and get the resulting vector y ,sum use kekan sum
 void spmv(int n, int *row_ptr, int *col_idx, double *val, double *x, double *y)
 {
     for (int i = 0; i < n; i++)
@@ -280,69 +279,7 @@ void store_x_complex(int n, double *x, double *x_v, char *filename)
     fprintf(p, "%d\n", n);
     int i;
     for (i = 0; i < n; i++)
-        fprintf(p, "%021.16le\t%021.16le\n", x[i], x_v[i]);
-    fclose(p);
-}
-
-// load right-hand side vector b
-void load_vector(int n, double *b, char *filename)
-{
-    FILE *p = fopen(filename, "r");
-    int n_right;
-    // MM_typecode matcode;
-
-    int r = 0;
-    char line[MM_MAX_LINE_LENGTH];
-    fgets(line, MM_MAX_LINE_LENGTH, p);
-
-    if (line[0] == '%')
-    {
-        r = fscanf(p, "%d", &n_right);
-    }
-    else
-    {
-        n_right = atoi(line);
-    }
-
-    if (n_right != n)
-    {
-        fclose(p);
-        fprintf(stdout, "Invalid size of vector.\n");
-        return;
-    }
-    for (int i = 0; i < n_right; i++)
-        r = fscanf(p, "%le", &b[i]);
-    fclose(p);
-}
-
-// load right-hand side vector b (complex type)
-void load_b_complex(int n, double *b, double *b_v, char *filename)
-{
-    FILE *p = fopen(filename, "r");
-    int n_right;
-    // MM_typecode matcode;
-
-    int r = 0;
-    char line[MM_MAX_LINE_LENGTH];
-    fgets(line, MM_MAX_LINE_LENGTH, p);
-
-    if (line[0] == '%')
-    {
-        r = fscanf(p, "%d", &n_right);
-    }
-    else
-    {
-        n_right = atoi(line);
-    }
-
-    if (n_right != n)
-    {
-        fclose(p);
-        fprintf(stdout, "Invalid size of vector.\n");
-        return;
-    }
-    for (int i = 0; i < n_right; i++)
-        r = fscanf(p, "%lf %lf", &b[i], &b_v[i]);
+        fprintf(p, "%021.16le %021.16le\n", x[i], x_v[i]);
     fclose(p);
 }
 

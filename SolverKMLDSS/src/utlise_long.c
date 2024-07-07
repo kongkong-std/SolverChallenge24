@@ -347,6 +347,6 @@ void store_x_ld(int n, long double* x, char* filename)
 {
     FILE* p = fopen(filename, "w");
     fprintf(p, "%d\n", n);
-    for (int i = 0; i < n; i++) fprintf(p, "%Lf\n", x[i]);
+    for (int i = 0; i < n; i++) fprintf(p, "%021.16Lf\n", x[i]);
     fclose(p);
 }

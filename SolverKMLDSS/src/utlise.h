@@ -34,9 +34,6 @@ void check_correctness_complex(int n, int *row_ptr, int *col_idx, double *val, d
 // store vector function
 void store_x(int n, double *x, char *filename);
 
-// read vector function
-void load_vector(int n, double *b, char *filename);
-
 void print_help();
 
 // Multiply a csr matrix with a vector x, and get the resulting vector y ,sum use kekan sum
@@ -73,19 +70,6 @@ double max_check(double *x, int n);
 
 double max_check_complex(double *x, double *xi, int n);
 
-// validate the x
-// answer1 = sqrt(|| A*x - b ||)
-// answer2 = || A*x - b || MAX
-// answer3 = sqrt(|| A*x - b ||/|| b ||)
-// precision check using double type
-// void check_correctness(int n, int *row_ptr, int *col_idx, double *val, double *x, double *b)
-void check_correctness(int n, int *row_ptr, int *col_idx, double *val, double *x, double *b);
-
-void check_correctness_complex(int n, int *row_ptr, int *col_idx,
-                               double *val, double *val_v, double *x, double *xi, double *b, double *bi);
-
-// store x to a file
-void store_x(int n, double *x, char *filename);
 // store x (complex type) to a file
 void store_x_complex(int n, double *x, double *x_v, char *filename);
 

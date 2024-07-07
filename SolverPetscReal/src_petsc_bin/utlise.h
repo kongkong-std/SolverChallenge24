@@ -1,15 +1,21 @@
+// Thanks to Yi Zong for providing support!
+// check memory using function
 #ifndef UTLISE_H_
 #define UTLISE_H_
 
-// Thanks to Yi Zong for providing support!
-// check memory using function
-
 // user define by shb & milkyway
-// #define MM_MAX_LINE_LENGTH  __INT32_MAX__
+#define MM_MAX_LINE_LENGTH __INT32_MAX__
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/resource.h>
 #include <math.h>
 #include <sys/time.h>
 #include <float.h>
-#include <stdlib.h>
+#include <mpi.h>
+
+#define MPI_USE
 
 /**
  * \brief Definition of max, min, abs
@@ -26,14 +32,10 @@ void mem_usage();
 // check answer function
 void check_correctness(int n, int *row_ptr, int *col_idx, double *val, double *x, double *b);
 
-void check_correctness_complex(int n, int *row_ptr, int *col_idx, double *val, double *val_v,
-                               double *x, double *xi, double *b, double *bi);
+void check_correctness_complex(int n, int *row_ptr, int *col_idx, double *val, double *val_v, double *x, double *xi, double *b, double *bi);
 
 // store vector function
 void store_x(int n, double *x, char *filename);
-
-// read vector function
-void load_vector(int n, double *b, char *filename);
 
 void print_help();
 
@@ -45,13 +47,12 @@ void mul(double *v1, double *v1i, double *v2, double *v2i, double *v3, double *v
 
 // The complex number multiplication
 void conj_mul(double *v1, double *v1i, double *v2, double *v2i, double *v3, double *v3i);
-
 // The complex number addition ,sum use kekan sum
 void add(double *v1, double *v1i, double *sum, double *sumi, double *c, double *ci);
 
 // Multiply a csr matrix with two vector x and xi, and get the resulting vector y and yi
-void spmv_complex(int n, int *row_ptr, int *col_idx, double *val, double *vali,
-                  double *x, double *xi, double *y, double *yi);
+void spmv_complex(int n, int *row_ptr, int *col_idx, double *val,
+                  double *vali, double *x, double *xi, double *y, double *yi);
 
 // Calculate the mode of complex number
 void complex_modulus_squared(double *a, double *ai, double *l);
@@ -74,9 +75,6 @@ double max_check_complex(double *x, double *xi, int n);
 
 // store x (complex type) to a file
 void store_x_complex(int n, double *x, double *x_v, char *filename);
-
-// load right-hand side vector b (complex type)
-void load_b_complex(int n, double *b, double *b_v, char *filename);
 
 // return now time
 double GetCurrentTime();

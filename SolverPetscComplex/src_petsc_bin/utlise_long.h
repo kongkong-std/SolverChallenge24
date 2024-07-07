@@ -74,23 +74,4 @@ long double max_check_ld(long double *x, int n);
 
 long double max_check_complex_ld(long double *x, long double *xi, int n);
 
-// precision check using long double type
-// validate the x
-// answer1 = sqrtl(|| A*x - b ||)
-// answer2 = || A*x - b || MAX
-// answer3 = sqrtl(|| A*x - b ||/|| b ||)
-// answer4 = MAX { |b - Ax|_i / |b_i| }
-void check_correctness_ld(int n, int *row_ptr, int *col_idx, long double *val,
-                          long double *x, long double *b);
-
-void check_correctness_ld_d2ld(int n, int *row_ptr, int *col_idx, double *val, double *x, double *b);
-
-void check_correctness_complex_ld(int n, int *row_ptr, int *col_idx, long double *val, long double *vali, long double *x, long double *xi,
-                                  long double *b, long double *bi);
-
-void check_correctness_complex_ld_d2ld(int n, int *row_ptr, int *col_idx,
-                                       double *val, double *vali, double *x, double *xi, double *b, double *bi);
-
-// store x to a file
-void store_x_ld(int n, long double *x, char *filename);
 #endif
