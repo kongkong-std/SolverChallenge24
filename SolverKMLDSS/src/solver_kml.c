@@ -113,14 +113,14 @@ void KMLRealSolverAnalyze(MySolver *solver, int n_thread_rdr)
     printf(">>>> kml-dss solver has been analyzed!!!\n\n");
 }
 
-void KMLRealSolverFactor(MySolver *solver)
+void KMLRealSolverFactor(MySolver *solver, double factor_threshold)
 {
     int ierr = 0;
 
     // Factorize
     printf(">>>> kml-dss solver begin to factorize...\n");
     (solver->dss_solver_factor_option).fieldMask = KMLDSS_FACTORIZE_OPTION_PERTURBATION_THRESHOLD;
-    (solver->dss_solver_factor_option).perturbationThreshold = 1e-8;
+    (solver->dss_solver_factor_option).perturbationThreshold = factor_threshold;
     ierr = KmlDssFactorize(solver->dss_solver, solver->dss_solver_a, &(solver->dss_solver_factor_option));
     if (ierr != KMLSS_NO_ERROR)
     {
@@ -331,14 +331,14 @@ void KMLComplexSolverAnalyze(MySolverComplex *solver, int n_thread_rdr)
     printf(">>>> kml-dss solver has been analyzed!!!\n\n");
 }
 
-void KMLComplexSolverFactor(MySolverComplex *solver)
+void KMLComplexSolverFactor(MySolverComplex *solver, double factor_threshold)
 {
     int ierr = 0;
 
     // Factorize
     printf(">>>> kml-dss solver begin to factorize...\n");
     (solver->dss_solver_factor_option).fieldMask = KMLDSS_FACTORIZE_OPTION_PERTURBATION_THRESHOLD;
-    (solver->dss_solver_factor_option).perturbationThreshold = 1e-8;
+    (solver->dss_solver_factor_option).perturbationThreshold = factor_threshold;
     ierr = KmlDssFactorize(solver->dss_solver, solver->dss_solver_a, &(solver->dss_solver_factor_option));
     if (ierr != KMLSS_NO_ERROR)
     {

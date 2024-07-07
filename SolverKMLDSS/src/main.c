@@ -24,17 +24,19 @@ int main(int argc, char **argv)
     double tt, time;
     double tt_analyze, time_analyze; // time of analyze
     double tt_factor, time_factor;   // time of factor
+    double tt_solve, time_solve;     // time of solve
 
-    char *filename_matrix;    // the filename of matrix A
-    char *filename_b;         // the filename of right-hand side vector b
-    int read_matrix_base = 1; // 0-base or 1-base, default 1-base
-    int type = 0;             // type to output time, 0: end to end time; 1:solver time + solve time; 2:solve time; default 0
-    int test_frequency = 1;   // run code frequency
-    int sys_type = 0;         // type of algebraic systems, 0: real, 1: complex; default 0
-    int IR_times = 10;        // max IR time
-    double sys_rtol = 1e-8;   // relative residual tolerance
-    int n_thread = 32;        // number of threads
-    int n_thread_rdr = 8;     // number of threads of fill-in reduction
+    char *filename_matrix;          // the filename of matrix A
+    char *filename_b;               // the filename of right-hand side vector b
+    int read_matrix_base = 1;       // 0-base or 1-base, default 1-base
+    int type = 0;                   // type to output time, 0: end to end time; 1:solver time + solve time; 2:solve time; default 0
+    int test_frequency = 1;         // run code frequency
+    int sys_type = 0;               // type of algebraic systems, 0: real, 1: complex; default 0
+    int IR_times = 10;              // max IR time
+    double sys_rtol = 1e-8;         // relative residual tolerance
+    int n_thread = 32;              // number of threads
+    int n_thread_rdr = 8;           // number of threads of fill-in reduction
+    double factor_threshold = 1e-8; // factor threshold
 
     /* ========================================== */
     // Step 0: Read command line argument
@@ -76,6 +78,10 @@ int main(int argc, char **argv)
         if ((strstr("-nt_rdr", argv[index])))
         {
             n_thread_rdr = atoi(argv[index + 1]);
+        }
+        if (strstr("-factor_threshold", argv[index]))
+        {
+            factor_threshold = atof(argv[index + 1]);
         }
     }
 
@@ -145,12 +151,16 @@ int main(int argc, char **argv)
                 printf("---- time of analyze: %12.6lf ms\n", time_analyze);
 
                 tt_factor = GetCurrentTime();
-                KMLRealSolverFactor(&mysolver);
+                KMLRealSolverFactor(&mysolver, factor_threshold);
                 time_factor = GetCurrentTime() - tt_factor;
                 printf("---- time of factor: %12.6lf ms\n", time_factor);
 
+                tt_solve = GetCurrentTime();
                 KMLRealSolverSolve(&mysolver);
+                time_solve = GetCurrentTime() - tt_solve;
+                printf("---- time of solve: %12.6lf ms\n", time_solve);
 
+#ifdef KML_DSS_IR_
                 // IR
                 spmv(n, row_ptr, col_idx, val, x, solver_r); // Ax
                 for (int index = 0; index < n; ++index)
@@ -198,19 +208,31 @@ int main(int argc, char **argv)
                 KMLRealSolverSOLCreate(&mysolver, n, x);
                 KmlSolverMatrixSetValue(mysolver.dss_solver_b, b);
                 KmlSolverMatrixSetValue(mysolver.dss_solver_x, x);
+#endif // KML_DSS_IR_
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
         else if (type == 1) // check direct_solver + solve time
         {
+            tt_analyze = GetCurrentTime();
             KMLRealSolverAnalyze(&mysolver, n_thread_rdr);
+            time_analyze = GetCurrentTime() - tt_analyze;
+            printf("---- time of analyze: %12.6lf ms\n", time_analyze);
 
             tt = GetCurrentTime();
             for (int i = 0; i < test_frequency; i++)
             {
-                KMLRealSolverFactor(&mysolver);
-                KMLRealSolverSolve(&mysolver);
+                tt_factor = GetCurrentTime();
+                KMLRealSolverFactor(&mysolver, factor_threshold);
+                time_factor = GetCurrentTime() - tt_factor;
+                printf("---- time of factor: %12.6lf ms\n", time_factor);
 
+                tt_solve = GetCurrentTime();
+                KMLRealSolverSolve(&mysolver);
+                time_solve = GetCurrentTime() - tt_solve;
+                printf("---- time of solve: %12.6lf ms\n", time_solve);
+
+#ifdef KML_DSS_IR_
                 // IR
                 spmv(n, row_ptr, col_idx, val, x, solver_r); // Ax
                 for (int index = 0; index < n; ++index)
@@ -258,19 +280,31 @@ int main(int argc, char **argv)
                 KMLRealSolverSOLCreate(&mysolver, n, x);
                 KmlSolverMatrixSetValue(mysolver.dss_solver_b, b);
                 KmlSolverMatrixSetValue(mysolver.dss_solver_x, x);
+#endif // KML_DSS_IR_
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
         else
         { // check solve time
+            tt_analyze = GetCurrentTime();
             KMLRealSolverAnalyze(&mysolver, n_thread_rdr);
-            KMLRealSolverFactor(&mysolver);
+            time_analyze = GetCurrentTime() - tt_analyze;
+            printf("---- time of analyze: %12.6lf ms\n", time_analyze);
+
+            tt_factor = GetCurrentTime();
+            KMLRealSolverFactor(&mysolver, factor_threshold);
+            time_factor = GetCurrentTime() - tt_factor;
+            printf("---- time of factor: %12.6lf ms\n", time_factor);
 
             tt = GetCurrentTime();
             for (int i = 0; i < test_frequency; i++)
             {
+                tt_solve = GetCurrentTime();
                 KMLRealSolverSolve(&mysolver);
+                time_solve = GetCurrentTime() - tt_solve;
+                printf("---- time of solve: %12.6lf ms\n", time_solve);
 
+#ifdef KML_DSS_IR_
                 // IR
                 spmv(n, row_ptr, col_idx, val, x, solver_r); // Ax
                 for (int index = 0; index < n; ++index)
@@ -318,6 +352,7 @@ int main(int argc, char **argv)
                 KMLRealSolverSOLCreate(&mysolver, n, x);
                 KmlSolverMatrixSetValue(mysolver.dss_solver_b, b);
                 KmlSolverMatrixSetValue(mysolver.dss_solver_x, x);
+#endif // KML_DSS_IR_
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
@@ -461,12 +496,16 @@ int main(int argc, char **argv)
                 printf("---- time of analyze: %12.6lf ms\n", time_analyze);
 
                 tt_factor = GetCurrentTime();
-                KMLComplexSolverFactor(&mysolver);
+                KMLComplexSolverFactor(&mysolver, factor_threshold);
                 time_factor = GetCurrentTime() - tt_factor;
                 printf("---- time of factor: %12.6lf ms\n", time_factor);
 
+                tt_solve = GetCurrentTime();
                 KMLComplexSolverSolve(&mysolver);
+                time_solve = GetCurrentTime() - tt_solve;
+                printf("---- time of solve: %12.6lf ms\n", time_solve);
 
+#ifdef KML_DSS_IR_
                 // IR
                 for (int index = 0; index < n; ++index)
                 {
@@ -526,19 +565,31 @@ int main(int argc, char **argv)
                 KMLComplexSolverSOLCreate(&mysolver, n, kml_dss_solver_x);
                 KmlSolverMatrixSetValue(mysolver.dss_solver_b, kml_dss_solver_b);
                 KmlSolverMatrixSetValue(mysolver.dss_solver_x, kml_dss_solver_x);
+#endif // KML_DSS_IR_
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
         else if (type == 1) // check direct_solver + solve time
         {
+            tt_analyze = GetCurrentTime();
             KMLComplexSolverAnalyze(&mysolver, n_thread_rdr);
+            time_analyze = GetCurrentTime() - tt_analyze;
+            printf("---- time of analyze: %12.6lf ms\n", time_analyze);
 
             tt = GetCurrentTime();
             for (int i = 0; i < test_frequency; i++)
             {
-                KMLComplexSolverFactor(&mysolver);
-                KMLComplexSolverSolve(&mysolver);
+                tt_factor = GetCurrentTime();
+                KMLComplexSolverFactor(&mysolver, factor_threshold);
+                time_factor = GetCurrentTime() - tt_factor;
+                printf("---- time of factor: %12.6lf ms\n", time_factor);
 
+                tt_solve = GetCurrentTime();
+                KMLComplexSolverSolve(&mysolver);
+                time_solve = GetCurrentTime() - tt_solve;
+                printf("---- time of solve: %12.6lf ms\n", time_solve);
+
+#ifdef KML_DSS_IR_
                 // IR
                 for (int index = 0; index < n; ++index)
                 {
@@ -598,20 +649,31 @@ int main(int argc, char **argv)
                 KMLComplexSolverSOLCreate(&mysolver, n, kml_dss_solver_x);
                 KmlSolverMatrixSetValue(mysolver.dss_solver_b, kml_dss_solver_b);
                 KmlSolverMatrixSetValue(mysolver.dss_solver_x, kml_dss_solver_x);
+#endif // KML_DSS_IR_
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
         else
         { // check solve time
-
+            tt_analyze = GetCurrentTime();
             KMLComplexSolverAnalyze(&mysolver, n_thread_rdr);
-            KMLComplexSolverFactor(&mysolver);
+            time_analyze = GetCurrentTime() - tt_analyze;
+            printf("---- time of analyze: %12.6lf ms\n", time_analyze);
+
+            tt_factor = GetCurrentTime();
+            KMLComplexSolverFactor(&mysolver, factor_threshold);
+            time_factor = GetCurrentTime() - tt_factor;
+            printf("---- time of factor: %12.6lf ms\n", time_factor);
 
             tt = GetCurrentTime();
             for (int i = 0; i < test_frequency; i++)
             {
+                tt_solve = GetCurrentTime();
                 KMLComplexSolverSolve(&mysolver);
+                time_solve = GetCurrentTime() - tt_solve;
+                printf("---- time of solve: %12.6lf ms\n", time_solve);
 
+#ifdef KML_DSS_IR_
                 // IR
                 for (int index = 0; index < n; ++index)
                 {
@@ -671,6 +733,7 @@ int main(int argc, char **argv)
                 KMLComplexSolverSOLCreate(&mysolver, n, kml_dss_solver_x);
                 KmlSolverMatrixSetValue(mysolver.dss_solver_b, kml_dss_solver_b);
                 KmlSolverMatrixSetValue(mysolver.dss_solver_x, kml_dss_solver_x);
+#endif // KML_DSS_IR_
             }
             time = (GetCurrentTime() - tt) / (double)(test_frequency);
         }
@@ -733,10 +796,6 @@ int main(int argc, char **argv)
 
     fprintf(stdout, "------------------------------------------\n");
 
-    /* ========================================== */
-    // Step 3: Check time, memory and correctness
-    /* ========================================== */
-
 #if 0
     // store x to a file
     char *answer_x = "answer_x.rhs";
@@ -751,13 +810,14 @@ int main(int argc, char **argv)
 
 /*
  * command line
- *     -file_mat        <path/to/mat>
- *     -file_rhs        <path/to/rhs>
- *     -type            <0/1/2>
- *     -sys_type        <0/1>
- *     -test_frequency  <int>
- *     -ir_times        <int>
- *     -sys_rtol        <double>
- *     -n_thread        <int>
- *     -nt_rdr          <int>
+ *     -file_mat            <path/to/mat>
+ *     -file_rhs            <path/to/rhs>
+ *     -type                <0/1/2>
+ *     -sys_type            <0/1>
+ *     -test_frequency      <int>
+ *     -ir_times            <int>
+ *     -sys_rtol            <double>
+ *     -n_thread            <int>
+ *     -nt_rdr              <int>
+ *     -factor_threshold    <double>
  */

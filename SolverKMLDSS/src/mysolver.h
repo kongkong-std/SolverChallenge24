@@ -11,6 +11,8 @@
 #include <complex.h>
 #include "kml_solver.h"
 
+#define KML_DSS_IR_
+
 // please add your code in this file
 typedef struct my_solver
 {
@@ -68,7 +70,7 @@ void KMLRealSolverSOLCreate(MySolver * /*solver type*/, int /*size of linear sys
                             double * /*sol*/);
 void KMLRealSolverInitialize(MySolver * /*solver type*/, int /*number of threads*/);
 void KMLRealSolverAnalyze(MySolver * /*solver type*/, int /*number of threads of fill-in reduction*/);
-void KMLRealSolverFactor(MySolver * /*solver type*/);
+void KMLRealSolverFactor(MySolver * /*solver type*/, double /*factor threshold*/);
 void KMLRealSolverSolve(MySolver * /*solver type*/);
 void KMLRealSolverQuery(MySolver * /*solver type*/);
 void KMLRealSolverClean(MySolver * /*solver type*/);
@@ -83,7 +85,7 @@ void KMLComplexSolverSOLCreate(MySolverComplex * /*solver type*/, int /*size of 
                                kml_complex_double * /*double complex sol*/);
 void KMLComplexSolverInitialize(MySolverComplex * /*solver type*/, int /*number of threads*/);
 void KMLComplexSolverAnalyze(MySolverComplex * /*solver type*/, int /*number of threads of fill-in reduction*/);
-void KMLComplexSolverFactor(MySolverComplex * /*solver type*/);
+void KMLComplexSolverFactor(MySolverComplex * /*solver type*/, double /*factor threshold*/);
 void KMLComplexSolverSolve(MySolverComplex * /*solver type*/);
 void KMLComplexSolverQuery(MySolverComplex * /*solver type*/);
 void KMLComplexSolverClean(MySolverComplex * /*solver type*/);
