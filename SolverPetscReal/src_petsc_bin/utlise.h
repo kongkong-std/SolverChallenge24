@@ -14,7 +14,6 @@
 #include <sys/time.h>
 #include <float.h>
 #include <mpi.h>
-
 #define MPI_USE
 
 /**
