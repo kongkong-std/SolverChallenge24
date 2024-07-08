@@ -3,7 +3,7 @@
 CC = /home/export/base/ycsc_zhaol/qinzk/online1/modify-openblas-software/mpich-3.2.1/bin/mpicc
 SRC = ../src
 
-CFLAGS = -c -std=c99 -fopenmp
+CFLAGS = -c -std=c99 -fopenmp -DMPI_USE
 CMD = -fPIC -Wall -Wwrite-strings -Wno-unknown-pragmas \
 -Wno-lto-type-mismatch -fstack-protector \
 -fvisibility=hidden -g3 -O3 -march=native -mtune=native

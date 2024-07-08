@@ -5,7 +5,7 @@
 CC = /online1/public/support/intel/openmpi/4.0.4/intel2020u4_serial/bin/mpicc
 SRC = ../src
 
-CFLAGS = -c -std=c99 -qopenmp
+CFLAGS = -c -std=c99 -qopenmp -DMPI_USE
 CMD = -fPIC -wd1572 -Wno-unknown-pragmas -g -O3
 
 INCL = -I/home/export/base/ycsc_zhaol/qinzk/online1/icc-software/petsc-3.21.2/complex/include \

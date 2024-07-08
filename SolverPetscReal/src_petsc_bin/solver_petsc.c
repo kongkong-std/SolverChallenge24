@@ -68,11 +68,12 @@ void SolverPetscInitialize(int argc, char **argv, MySolver *mysolver)
     int n_vec = 0;
     PetscCall(VecGetSize(mysolver->solver_b, &n_vec));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "vector Row = %d\n", n_vec));
+
+    PetscCall(KSPCreate(PETSC_COMM_WORLD, &(mysolver->ksp)));
 }
 
 void SolverPetscPreprocess(int argc, char **argv, MySolver *mysolver)
 {
-    PetscCall(KSPCreate(PETSC_COMM_WORLD, &(mysolver->ksp)));
     PetscCall(KSPSetOperators(mysolver->ksp, mysolver->solver_a, mysolver->solver_a));
     PetscCall(KSPSetFromOptions(mysolver->ksp));
 
