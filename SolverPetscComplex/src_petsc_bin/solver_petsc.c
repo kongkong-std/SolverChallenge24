@@ -118,16 +118,18 @@ void SolverPetscSolutionFileIO(MySolver *mysolver)
 {
     PetscViewer viewer;
     PetscInt n_solver_x = 0;
+    PetscInt row_start = 0, row_end = 0;
+    PetscCall(VecGetOwnershipRange(mysolver->solver_x, &row_start, &row_end));
     const PetscScalar *array_solver_x;
     PetscCall(VecGetSize(mysolver->solver_x, &n_solver_x));
     PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, "answer_x.txt", &viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer, "%d\n", n_solver_x));
     PetscCall(VecGetArrayRead(mysolver->solver_x, &array_solver_x));
-    for (int index = 0; index < n_solver_x; ++index)
+    for (int index = row_start; index < row_end; ++index)
     {
         PetscCall(PetscViewerASCIIPrintf(viewer, "%021.16le\t%021.16le\n",
-                                         PetscRealPart(array_solver_x[index]),
-                                         PetscImaginaryPart(array_solver_x[index])));
+                                         PetscRealPart(array_solver_x[index - row_start]),
+                                         PetscImaginaryPart(array_solver_x[index - row_end])));
     }
     PetscCall(VecRestoreArrayRead(mysolver->solver_x, &array_solver_x));
     PetscCall(PetscViewerDestroy(&viewer));
