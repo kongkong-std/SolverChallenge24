@@ -409,8 +409,8 @@ int main(int argc, char **argv)
 
         x = (double *)malloc(sizeof(double) * n);
         x_im = (double *)malloc(sizeof(double) * n);
-        b = (double *)malloc(sizeof(double) * n);
-        b_im = (double *)malloc(sizeof(double) * n);
+        // b = (double *)malloc(sizeof(double) * n);
+        // b_im = (double *)malloc(sizeof(double) * n);
 
         ComplexRHSFileProcess(filename_b, &b, &b_im);
 

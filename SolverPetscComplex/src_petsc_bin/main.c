@@ -113,7 +113,7 @@ int main(int argc, char **argv)
 #endif // DIRECT_SOLVER
 
 #ifdef ITERATIVE_SOLVER
-    if (sys_type == 0) // system
+    if (sys_type == 1) // system
     {
         // MPI iterative solver sample
         MySolver mysolver;

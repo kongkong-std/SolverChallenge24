@@ -54,22 +54,14 @@ void SolverPetscSolve(int argc, char **argv, MySolver *mysolver);
 void SolverPetscResidualCheck(int argc, char **argv, MySolver *mysolver);
 
 /*
-* solver solution file io
-*/
+ * solver solution file io
+ */
 void SolverPetscSolutionFileIO(MySolver *);
 
 /*
  * solver destroy
  */
 void SolverPetscDestroy(MySolver *);
-
-#if 0
-/*
- * solver get linear system
- */
-void SolverPetscGetLinearSystem(const MySolver *mysolver, int *m, int *n, int *nnz,
-                                int **row_ptr, int **col_idx, double **val, double **x, double **b);
-#endif // 0 solver get linear system
 
 #endif // ITERATIVE_SOLVER
 
