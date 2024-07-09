@@ -1,0 +1,49 @@
+# makefile for challenge code real type
+# module load amd/gcc_compiler/10.2.0
+# module load amd/openmpi/4.0.4/gcc10.2.0_pmi
+CC = /online1/public/support/amd/openmpi/4.0.4/gcc10.2.0_pmi/bin/mpicc
+SRC = ../src
+
+CFLAGS = -c -std=c99 -DMPI_USE
+CMD = -fPIC -Wall -Wwrite-strings -Wno-unknown-pragmas \
+-Wno-lto-type-mismatch -fstack-protector \
+-fvisibility=hidden -g3 -O3 -march=native -mtune=native
+
+INCL = -I/home/export/base/ycsc_zhaol/qinzk/online1/PetscSolverInstallation/amd-openmpi-petsc/petsc-3.21.2-metis0-0openmp/real/include \
+-I/online1/public/support/amd/openmpi/4.0.4/gcc10.2.0_pmi/include
+
+LIB_PATH = -Wl,-rpath,/home/export/base/ycsc_zhaol/qinzk/online1/PetscSolverInstallation/amd-openmpi-petsc/petsc-3.21.2-metis0-0openmp/real/lib \
+-L/home/export/base/ycsc_zhaol/qinzk/online1/PetscSolverInstallation/amd-openmpi-petsc/petsc-3.21.2-metis0-0openmp/real/lib \
+-Wl,-rpath,/online1/public/support/amd/openmpi/4.0.4/gcc10.2.0_pmi/lib \
+-L/online1/public/support/amd/openmpi/4.0.4/gcc10.2.0_pmi/lib \
+-Wl,-rpath,/online1/public/support/amd/gcc_compiler/10.2.0/lib/gcc/x86_64-pc-linux-gnu/10.2.0 \
+-L/online1/public/support/amd/gcc_compiler/10.2.0/lib/gcc/x86_64-pc-linux-gnu/10.2.0 \
+-Wl,-rpath,/online1/public/support/amd/gcc_compiler/10.2.0/lib64 \
+-L/online1/public/support/amd/gcc_compiler/10.2.0/lib64 \
+-Wl,-rpath,/online1/public/support/amd/gcc_compiler/10.2.0/lib \
+-L/online1/public/support/amd/gcc_compiler/10.2.0/lib 
+
+LIB_FLAG = -lpetsc -lHYPRE -ldmumps -lsmumps -lzmumps -lcmumps -lmumps_common -lpord -lpthread \
+-lscalapack -lopenblas -lptesmumps -lptscotchparmetisv3 -lptscotch -lptscotcherr \
+-lesmumps -lscotch -lscotcherr -lparmetis -lmetis -lm -lX11 -ldl -lmpi_usempif08 \
+-lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi -lgfortran -lm -lgfortran -lm -lgcc_s \
+-lquadmath -lpthread -lstdc++ -lrt -lquadmath -ldl
+
+
+LIB = $(LIB_PATH) $(LIB_FLAG)
+OBJECT := $(patsubst %.c,%.o,$(wildcard $(SRC)/*.c))
+
+.PHONY: all clean
+
+all: app_petsc_exe
+
+app_petsc_exe: $(OBJECT)
+	$(CC) $(CMD) $(INCL) -o app_petsc_exe $(OBJECT) $(LIB)
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(CMD) $(INCL) "$<" -o "$@"
+
+clean:
+	rm app_petsc_exe $(OBJECT)
+
+ 
