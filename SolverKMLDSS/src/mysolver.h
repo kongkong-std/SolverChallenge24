@@ -11,7 +11,7 @@
 #include <complex.h>
 #include "kml_solver.h"
 
-// #define KML_DSS_IR_
+#define KML_DSS_IR_
 
 // please add your code in this file
 typedef struct my_solver

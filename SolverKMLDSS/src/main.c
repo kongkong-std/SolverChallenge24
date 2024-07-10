@@ -38,6 +38,7 @@ int main(int argc, char **argv)
     int n_thread_rdr = 8;           // number of threads of fill-in reduction
     double factor_threshold = 1e-8; // factor threshold
     char *matrix_type = NULL;       // matrix type KmlSolverMatrixType
+    KmlSolverMatrixType kml_matrix_type = KMLSS_MATRIX_GEN;
 
     /* ========================================== */
     // Step 0: Read command line argument
@@ -93,7 +94,7 @@ int main(int argc, char **argv)
     fprintf(stdout, "matrix name :      %s\nvectorb name :     %s\nread function :    base-%d\ntype :             %d\nsys_type :         %d\n",
             filename_matrix, filename_b, read_matrix_base, type, sys_type);
 
-    KmlSolverMatrixType kml_matrix_type = ParseMatrixType(matrix_type);
+    kml_matrix_type = ParseMatrixType(matrix_type);
 
     /* ========================================== */
     // Step 1: Load matrix and rhs from mtx files
@@ -169,8 +170,7 @@ int main(int argc, char **argv)
                 printf("---- time of solve: %12.6lf ms\n", time_solve);
 
 #ifdef KML_DSS_IR_
-// IR
-#if 0
+                // IR
                 spmv(n, row_ptr, col_idx, val, x, solver_r); // Ax
                 for (int index = 0; index < n; ++index)
                 {
@@ -181,7 +181,6 @@ int main(int argc, char **argv)
                 printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
                 printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
                 printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
-#endif
                 while (solver_r_l2_norm / solver_b_l2_norm >= sys_rtol && ir_times < IR_times)
                 {
                     ++ir_times;
@@ -243,8 +242,7 @@ int main(int argc, char **argv)
                 printf("---- time of solve: %12.6lf ms\n", time_solve);
 
 #ifdef KML_DSS_IR_
-// IR
-#if 0
+                // IR
                 spmv(n, row_ptr, col_idx, val, x, solver_r); // Ax
                 for (int index = 0; index < n; ++index)
                 {
@@ -255,7 +253,6 @@ int main(int argc, char **argv)
                 printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
                 printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
                 printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
-#endif
                 while (solver_r_l2_norm / solver_b_l2_norm >= sys_rtol && ir_times < IR_times)
                 {
                     ++ir_times;
@@ -317,8 +314,7 @@ int main(int argc, char **argv)
                 printf("---- time of solve: %12.6lf ms\n", time_solve);
 
 #ifdef KML_DSS_IR_
-// IR
-#if 0
+                // IR
                 spmv(n, row_ptr, col_idx, val, x, solver_r); // Ax
                 for (int index = 0; index < n; ++index)
                 {
@@ -329,7 +325,6 @@ int main(int argc, char **argv)
                 printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
                 printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
                 printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
-#endif
                 while (solver_r_l2_norm / solver_b_l2_norm >= sys_rtol && ir_times < IR_times)
                 {
                     ++ir_times;
@@ -522,8 +517,7 @@ int main(int argc, char **argv)
                 printf("---- time of solve: %12.6lf ms\n", time_solve);
 
 #ifdef KML_DSS_IR_
-// IR
-#if 0
+                // IR
                 for (int index = 0; index < n; ++index)
                 {
                     x[index] = creal(kml_dss_solver_x[index]); // updating solution
@@ -540,7 +534,6 @@ int main(int argc, char **argv)
                 printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
                 printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
                 printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
-#endif
                 while (solver_r_l2_norm / solver_b_l2_norm >= sys_rtol && ir_times < IR_times)
                 {
                     ++ir_times;
@@ -608,8 +601,7 @@ int main(int argc, char **argv)
                 printf("---- time of solve: %12.6lf ms\n", time_solve);
 
 #ifdef KML_DSS_IR_
-// IR
-#if 0
+                // IR
                 for (int index = 0; index < n; ++index)
                 {
                     x[index] = creal(kml_dss_solver_x[index]); // updating solution
@@ -626,7 +618,6 @@ int main(int argc, char **argv)
                 printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
                 printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
                 printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
-#endif
                 while (solver_r_l2_norm / solver_b_l2_norm >= sys_rtol && ir_times < IR_times)
                 {
                     ++ir_times;
@@ -694,8 +685,7 @@ int main(int argc, char **argv)
                 printf("---- time of solve: %12.6lf ms\n", time_solve);
 
 #ifdef KML_DSS_IR_
-// IR
-#if 0
+                // IR
                 for (int index = 0; index < n; ++index)
                 {
                     x[index] = creal(kml_dss_solver_x[index]); // updating solution
@@ -712,7 +702,6 @@ int main(int argc, char **argv)
                 printf(">>>> L2 rhs norm: %021.16le\n", solver_b_l2_norm);
                 printf(">>>> L2 residual norm: %021.16le\n", solver_r_l2_norm);
                 printf(">>>> L2 relative residual norm: %021.16le\n", solver_r_l2_norm / solver_b_l2_norm);
-#endif
                 while (solver_r_l2_norm / solver_b_l2_norm >= sys_rtol && ir_times < IR_times)
                 {
                     ++ir_times;
