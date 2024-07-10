@@ -84,62 +84,33 @@ void SolverPetscSolutionFileIO(MySolver *mysolver)
     MPI_Comm_size(MPI_COMM_WORLD, &mysize);
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
-    PetscInt n_solver_x = 0, global_n_solver_x = 0;
+    PetscInt n_solver_x = 0;
     PetscInt x_row_start = 0, x_row_end = 0;
     const PetscScalar *array_solver_x;
-    PetscScalar *global_array_solver_x = NULL;
 
     PetscCall(VecGetOwnershipRange(mysolver->solver_x, &x_row_start, &x_row_end));
-    PetscCall(VecGetSize(mysolver->solver_x, &global_n_solver_x));
     PetscCall(VecGetLocalSize(mysolver->solver_x, &n_solver_x));
     PetscCall(VecGetArrayRead(mysolver->solver_x, &array_solver_x));
 
-    if (myrank == 0)
+    FILE *fp = NULL;
+    char path_sol[PETSC_MAX_PATH_LEN];
+    sprintf(path_sol, "./answer_file/answer_x_%d.txt", myrank);
+
+    if((fp = fopen(path_sol, "wb")) == NULL)
     {
-        if ((global_array_solver_x = (PetscScalar *)
-                 malloc(global_n_solver_x * sizeof(PetscScalar))) == NULL)
-        {
-            fprintf(stderr, "Memory allocation failed - \'solution vector\'\n");
-            exit(EXIT_FAILURE);
-        }
+        fprintf(stderr, "Cannot open file - \'%s\'\n", path_sol);
+        exit(EXIT_FAILURE);
     }
 
-    MPI_Datatype MPI_PETSC_SCALAR;
-    MPI_Type_contiguous(sizeof(PetscScalar), MPI_BYTE, &MPI_PETSC_SCALAR);
-    MPI_Type_commit(&MPI_PETSC_SCALAR);
-
-    MPI_Gather(array_solver_x, n_solver_x, MPI_PETSC_SCALAR,
-               global_array_solver_x + x_row_start, n_solver_x, MPI_PETSC_SCALAR,
-               0, PETSC_COMM_WORLD);
-
-    MPI_Type_free(&MPI_PETSC_SCALAR);
-
-    // file io
-    if (myrank == 0)
+    fprintf(fp, "%d\n", n_solver_x);
+    for (int index = x_row_start; index < x_row_end; ++index)
     {
-        FILE *fp = NULL;
-        if ((fp = fopen("answer_x.txt", "wb")) == NULL)
-        {
-            fprintf(stderr, "Cannot open file - \'solution vector\'\n");
-            exit(EXIT_FAILURE);
-        }
-
-        fprintf(fp, "%d\n", global_n_solver_x);
-        for (int index = 0; index < global_n_solver_x; ++index)
-        {
-            fprintf(fp, "%021.16le\t%021.16le\n",
-                    PetscRealPart(global_array_solver_x[index]),
-                    PetscImaginaryPart(global_array_solver_x[index]));
-        }
-
-        fclose(fp);
+        fprintf(fp, "%d\t%021.16le\t%021.16le\n", index,
+                PetscRealPart(array_solver_x[index - x_row_start]),
+                PetscImaginaryPart(array_solver_x[index - x_row_start]));
     }
 
-    // free memory
-    if (myrank == 0)
-    {
-        free(global_array_solver_x);
-    }
+    fclose(fp);
 }
 
 void SolverPetscDestroy(MySolver *mysolver)
