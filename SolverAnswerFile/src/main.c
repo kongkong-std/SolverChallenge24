@@ -17,7 +17,7 @@ int main(int argc, char **argv)
     }
 
     Vector *answer_array = NULL;
-    if (answer_array = (Vector *)malloc(np * sizeof(Vector)) == NULL)
+    if ((answer_array = (Vector *)malloc(np * sizeof(Vector))) == NULL)
     {
         fprintf(stderr, "Memory allocation failed - \'answer file\'\n");
         exit(EXIT_FAILURE);
