@@ -1,7 +1,43 @@
 #include "mysolver.h"
 
-void KMLRealSolverMatrixCreate(MySolver *solver, int n,
-                               int *row_ptr, int *col_idx, double *val)
+KmlSolverMatrixType ParseMatrixType(const char *matrixTypeStr)
+{
+    if (strcmp(matrixTypeStr, "KMLSS_MATRIX_GEN") == 0)
+    {
+        return KMLSS_MATRIX_GEN;
+    }
+    else if (strcmp(matrixTypeStr, "KMLSS_MATRIX_STRUCT_SYM") == 0)
+    {
+        return KMLSS_MATRIX_STRUCT_SYM;
+    }
+    else if (strcmp(matrixTypeStr, "KMLSS_MATRIX_SYM") == 0)
+    {
+        return KMLSS_MATRIX_SYM;
+    }
+    else if (strcmp(matrixTypeStr, "KMLSS_MATRIX_HER") == 0)
+    {
+        return KMLSS_MATRIX_HER;
+    }
+    else if (strcmp(matrixTypeStr, "KMLSS_MATRIX_SPD") == 0)
+    {
+        return KMLSS_MATRIX_SPD;
+    }
+    else if (strcmp(matrixTypeStr, "KMLSS_MATRIX_HPD") == 0)
+    {
+        return KMLSS_MATRIX_HPD;
+    }
+    else if (strcmp(matrixTypeStr, "KMLSS_MATRIX_LAST") == 0)
+    {
+        return KMLSS_MATRIX_LAST;
+    }
+    else
+    {
+        return -1; // Invalid option
+    }
+}
+
+void KMLRealSolverMatrixCreate(MySolver *solver, KmlSolverMatrixType matrix_type,
+                               int n, int *row_ptr, int *col_idx, double *val)
 {
     int ierr = 0;
 
@@ -16,7 +52,8 @@ void KMLRealSolverMatrixCreate(MySolver *solver, int n,
     (solver->dss_store_a).csr.colIndex = col_idx;
     (solver->dss_store_a).csr.value = val;
     (solver->dss_option_a).fieldMask = KMLSS_MATRIX_OPTION_TYPE;
-    (solver->dss_option_a).type = KMLSS_MATRIX_GEN;
+    // (solver->dss_option_a).type = KMLSS_MATRIX_GEN;
+    (solver->dss_option_a).type = matrix_type;
     ierr = KmlSolverMatrixCreate(&(solver->dss_solver_a), &(solver->dss_store_a), &(solver->dss_option_a));
     if (ierr != KMLSS_NO_ERROR)
     {
@@ -216,8 +253,8 @@ void KMLRealSolverClean(MySolver *solver)
     printf(">>>> kml-dss sol has beed destroyed!!!\n\n");
 }
 
-void KMLComplexSolverMatrixCreate(MySolverComplex *solver, int n,
-                                  int *row_ptr, int *col_idx, kml_complex_double *val)
+void KMLComplexSolverMatrixCreate(MySolverComplex *solver, KmlSolverMatrixType matrix_type,
+                                  int n, int *row_ptr, int *col_idx, kml_complex_double *val)
 {
     int ierr = 0;
 
@@ -232,7 +269,8 @@ void KMLComplexSolverMatrixCreate(MySolverComplex *solver, int n,
     (solver->dss_store_a).csr.colIndex = col_idx;
     (solver->dss_store_a).csr.value = val;
     (solver->dss_option_a).fieldMask = KMLSS_MATRIX_OPTION_TYPE;
-    (solver->dss_option_a).type = KMLSS_MATRIX_GEN;
+    // (solver->dss_option_a).type = KMLSS_MATRIX_GEN;
+    (solver->dss_option_a).type = matrix_type;
     ierr = KmlSolverMatrixCreate(&(solver->dss_solver_a), &(solver->dss_store_a), &(solver->dss_option_a));
     if (ierr != KMLSS_NO_ERROR)
     {

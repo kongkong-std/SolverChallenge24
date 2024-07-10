@@ -8,7 +8,8 @@
 CC = gcc
 SRC = ../src
 
-CFLAGS = -c -std=c99 -fopenmp
+CFLAGS = -c -std=c99 -fopenmp -DKML_DSS_IR_
+#CFLAGS = -c -std=c99 -fopenmp
 CMD = -Wall -g -O3
 
 INCL =

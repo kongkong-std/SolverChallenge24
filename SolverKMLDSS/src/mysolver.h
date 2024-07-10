@@ -11,7 +11,7 @@
 #include <complex.h>
 #include "kml_solver.h"
 
-#define KML_DSS_IR_
+// #define KML_DSS_IR_
 
 // please add your code in this file
 typedef struct my_solver
@@ -60,8 +60,11 @@ typedef struct my_solver_complex
     KmlDssInfo dss_solver_info;                     // solver information
 } MySolverComplex;
 
+KmlSolverMatrixType ParseMatrixType(const char * /*matrix type*/);
+
 //! real system
-void KMLRealSolverMatrixCreate(MySolver * /*solver type*/, int /*size of linear system*/,
+void KMLRealSolverMatrixCreate(MySolver * /*solver type*/, KmlSolverMatrixType /*matrix type*/,
+                               int /*size of linear system*/,
                                int * /*row ptr in csr*/, int * /*col idx in csr*/,
                                double * /*val in csr*/);
 void KMLRealSolverRHSCreate(MySolver * /*solver type*/, int /*size of linear system*/,
@@ -76,7 +79,8 @@ void KMLRealSolverQuery(MySolver * /*solver type*/);
 void KMLRealSolverClean(MySolver * /*solver type*/);
 
 //! complex system
-void KMLComplexSolverMatrixCreate(MySolverComplex * /*solver type*/, int /*size of linear system*/,
+void KMLComplexSolverMatrixCreate(MySolverComplex * /*solver type*/, KmlSolverMatrixType /*matrix type*/,
+                                  int /*size of linear system*/,
                                   int * /*row prt in csr*/, int * /*col idx in csr*/,
                                   kml_complex_double * /*double complex val in csr*/);
 void KMLComplexSolverRHSCreate(MySolverComplex * /*solver type*/, int /*size of linear system*/,
