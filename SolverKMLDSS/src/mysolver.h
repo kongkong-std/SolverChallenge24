@@ -61,6 +61,7 @@ typedef struct my_solver_complex
 } MySolverComplex;
 
 KmlSolverMatrixType ParseMatrixType(const char * /*matrix type*/);
+KmlDssRefineMethod ParseRefineMethod(const char * /*refine method*/);
 
 //! real system
 void KMLRealSolverMatrixCreate(MySolver * /*solver type*/, KmlSolverMatrixType /*matrix type*/,
@@ -74,7 +75,7 @@ void KMLRealSolverSOLCreate(MySolver * /*solver type*/, int /*size of linear sys
 void KMLRealSolverInitialize(MySolver * /*solver type*/, int /*number of threads*/);
 void KMLRealSolverAnalyze(MySolver * /*solver type*/, int /*number of threads of fill-in reduction*/);
 void KMLRealSolverFactor(MySolver * /*solver type*/, double /*factor threshold*/);
-void KMLRealSolverSolve(MySolver * /*solver type*/);
+void KMLRealSolverSolve(MySolver * /*solver type*/, KmlDssRefineMethod /*refine method*/, int /*refine maxit*/, double /*refine tol*/);
 void KMLRealSolverQuery(MySolver * /*solver type*/);
 void KMLRealSolverClean(MySolver * /*solver type*/);
 
@@ -90,7 +91,7 @@ void KMLComplexSolverSOLCreate(MySolverComplex * /*solver type*/, int /*size of 
 void KMLComplexSolverInitialize(MySolverComplex * /*solver type*/, int /*number of threads*/);
 void KMLComplexSolverAnalyze(MySolverComplex * /*solver type*/, int /*number of threads of fill-in reduction*/);
 void KMLComplexSolverFactor(MySolverComplex * /*solver type*/, double /*factor threshold*/);
-void KMLComplexSolverSolve(MySolverComplex * /*solver type*/);
+void KMLComplexSolverSolve(MySolverComplex * /*solver type*/, KmlDssRefineMethod /*refine method*/, int /*refine maxit*/, double /*refine tol*/);
 void KMLComplexSolverQuery(MySolverComplex * /*solver type*/);
 void KMLComplexSolverClean(MySolverComplex * /*solver type*/);
 #endif

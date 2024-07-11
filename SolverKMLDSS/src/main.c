@@ -38,7 +38,11 @@ int main(int argc, char **argv)
     int n_thread_rdr = 8;           // number of threads of fill-in reduction
     double factor_threshold = 1e-8; // factor threshold
     char *matrix_type = NULL;       // matrix type KmlSolverMatrixType
+    char *refine_method = NULL;     // solver refine method
+    int refine_maxit = 1;           // refine max iter
+    double refine_tol = sys_rtol;   // refine tolerance
     KmlSolverMatrixType kml_matrix_type = KMLSS_MATRIX_GEN;
+    KmlDssRefineMethod kml_refine_method = KMLDSS_REFINE_OFF;
 
     /* ========================================== */
     // Step 0: Read command line argument
@@ -89,12 +93,25 @@ int main(int argc, char **argv)
         {
             matrix_type = argv[index + 1];
         }
+        if (strstr("-refine_method", argv[index]))
+        {
+            refine_method = argv[index + 1];
+        }
+        if (strstr("-refine_maxit", argv[index]))
+        {
+            refine_maxit = atoi(argv[index + 1]);
+        }
+        if (strstr("-refine_tol", argv[index]))
+        {
+            refine_tol = atof(argv[index + 1]);
+        }
     }
 
     fprintf(stdout, "matrix name :      %s\nvectorb name :     %s\nread function :    base-%d\ntype :             %d\nsys_type :         %d\n",
             filename_matrix, filename_b, read_matrix_base, type, sys_type);
 
     kml_matrix_type = ParseMatrixType(matrix_type);
+    kml_refine_method = ParseRefineMethod(refine_method);
 
     /* ========================================== */
     // Step 1: Load matrix and rhs from mtx files
@@ -165,7 +182,7 @@ int main(int argc, char **argv)
                 printf("---- time of factor: %12.6lf ms\n", time_factor);
 
                 tt_solve = GetCurrentTime();
-                KMLRealSolverSolve(&mysolver);
+                KMLRealSolverSolve(&mysolver, kml_refine_method, refine_maxit, refine_tol);
                 time_solve = GetCurrentTime() - tt_solve;
                 printf("---- time of solve: %12.6lf ms\n", time_solve);
 
@@ -190,7 +207,7 @@ int main(int argc, char **argv)
                     KMLRealSolverSOLCreate(&mysolver, n, solver_e);
                     KmlSolverMatrixSetValue(mysolver.dss_solver_b, solver_r);
                     KmlSolverMatrixSetValue(mysolver.dss_solver_x, solver_e);
-                    KMLRealSolverSolve(&mysolver);
+                    KMLRealSolverSolve(&mysolver, kml_refine_method, refine_maxit, refine_tol);
 
                     // updating solution
                     for (int index = 0; index < n; ++index)
@@ -237,7 +254,7 @@ int main(int argc, char **argv)
                 printf("---- time of factor: %12.6lf ms\n", time_factor);
 
                 tt_solve = GetCurrentTime();
-                KMLRealSolverSolve(&mysolver);
+                KMLRealSolverSolve(&mysolver, kml_refine_method, refine_maxit, refine_tol);
                 time_solve = GetCurrentTime() - tt_solve;
                 printf("---- time of solve: %12.6lf ms\n", time_solve);
 
@@ -262,7 +279,7 @@ int main(int argc, char **argv)
                     KMLRealSolverSOLCreate(&mysolver, n, solver_e);
                     KmlSolverMatrixSetValue(mysolver.dss_solver_b, solver_r);
                     KmlSolverMatrixSetValue(mysolver.dss_solver_x, solver_e);
-                    KMLRealSolverSolve(&mysolver);
+                    KMLRealSolverSolve(&mysolver, kml_refine_method, refine_maxit, refine_tol);
 
                     // updating solution
                     for (int index = 0; index < n; ++index)
@@ -309,7 +326,7 @@ int main(int argc, char **argv)
             for (int i = 0; i < test_frequency; i++)
             {
                 tt_solve = GetCurrentTime();
-                KMLRealSolverSolve(&mysolver);
+                KMLRealSolverSolve(&mysolver, kml_refine_method, refine_maxit, refine_tol);
                 time_solve = GetCurrentTime() - tt_solve;
                 printf("---- time of solve: %12.6lf ms\n", time_solve);
 
@@ -334,7 +351,7 @@ int main(int argc, char **argv)
                     KMLRealSolverSOLCreate(&mysolver, n, solver_e);
                     KmlSolverMatrixSetValue(mysolver.dss_solver_b, solver_r);
                     KmlSolverMatrixSetValue(mysolver.dss_solver_x, solver_e);
-                    KMLRealSolverSolve(&mysolver);
+                    KMLRealSolverSolve(&mysolver, kml_refine_method, refine_maxit, refine_tol);
 
                     // updating solution
                     for (int index = 0; index < n; ++index)
@@ -512,7 +529,7 @@ int main(int argc, char **argv)
                 printf("---- time of factor: %12.6lf ms\n", time_factor);
 
                 tt_solve = GetCurrentTime();
-                KMLComplexSolverSolve(&mysolver);
+                KMLComplexSolverSolve(&mysolver, kml_refine_method, refine_maxit, refine_tol);
                 time_solve = GetCurrentTime() - tt_solve;
                 printf("---- time of solve: %12.6lf ms\n", time_solve);
 
@@ -546,7 +563,7 @@ int main(int argc, char **argv)
                     }
                     KmlSolverMatrixSetValue(mysolver.dss_solver_b, kml_dss_solver_r);
                     KmlSolverMatrixSetValue(mysolver.dss_solver_x, kml_dss_solver_e);
-                    KMLComplexSolverSolve(&mysolver);
+                    KMLComplexSolverSolve(&mysolver, kml_refine_method, refine_maxit, refine_tol);
 
                     // updating solution
                     for (int index = 0; index < n; ++index)
@@ -596,7 +613,7 @@ int main(int argc, char **argv)
                 printf("---- time of factor: %12.6lf ms\n", time_factor);
 
                 tt_solve = GetCurrentTime();
-                KMLComplexSolverSolve(&mysolver);
+                KMLComplexSolverSolve(&mysolver, kml_refine_method, refine_maxit, refine_tol);
                 time_solve = GetCurrentTime() - tt_solve;
                 printf("---- time of solve: %12.6lf ms\n", time_solve);
 
@@ -630,7 +647,7 @@ int main(int argc, char **argv)
                     }
                     KmlSolverMatrixSetValue(mysolver.dss_solver_b, kml_dss_solver_r);
                     KmlSolverMatrixSetValue(mysolver.dss_solver_x, kml_dss_solver_e);
-                    KMLComplexSolverSolve(&mysolver);
+                    KMLComplexSolverSolve(&mysolver, kml_refine_method, refine_maxit, refine_tol);
 
                     // updating solution
                     for (int index = 0; index < n; ++index)
@@ -680,7 +697,7 @@ int main(int argc, char **argv)
             for (int i = 0; i < test_frequency; i++)
             {
                 tt_solve = GetCurrentTime();
-                KMLComplexSolverSolve(&mysolver);
+                KMLComplexSolverSolve(&mysolver, kml_refine_method, refine_maxit, refine_tol);
                 time_solve = GetCurrentTime() - tt_solve;
                 printf("---- time of solve: %12.6lf ms\n", time_solve);
 
@@ -714,7 +731,7 @@ int main(int argc, char **argv)
                     }
                     KmlSolverMatrixSetValue(mysolver.dss_solver_b, kml_dss_solver_r);
                     KmlSolverMatrixSetValue(mysolver.dss_solver_x, kml_dss_solver_e);
-                    KMLComplexSolverSolve(&mysolver);
+                    KMLComplexSolverSolve(&mysolver, kml_refine_method, refine_maxit, refine_tol);
 
                     // updating solution
                     for (int index = 0; index < n; ++index)

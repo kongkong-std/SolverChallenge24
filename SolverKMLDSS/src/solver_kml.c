@@ -1,5 +1,25 @@
 #include "mysolver.h"
 
+KmlDssRefineMethod ParseRefineMethod(const char * refineMethod)
+{
+    if (strcmp(refineMethod, "KMLDSS_REFINE_OFF") == 0)
+    {
+        return KMLDSS_REFINE_OFF;
+    }
+    else if (strcmp(refineMethod, "KMLDSS_REFINE_CLASSICAL") == 0)
+    {
+        return KMLDSS_REFINE_CLASSICAL;
+    }
+    else if (strcmp(refineMethod, "KMLDSS_REFINE_LAST") == 0)
+    {
+        return KMLDSS_REFINE_LAST;
+    }
+    else
+    {
+        return -1; // Invalid option
+    }
+}
+
 KmlSolverMatrixType ParseMatrixType(const char *matrixTypeStr)
 {
     if (strcmp(matrixTypeStr, "KMLSS_MATRIX_GEN") == 0)
@@ -167,7 +187,7 @@ void KMLRealSolverFactor(MySolver *solver, double factor_threshold)
     printf(">>>> kml-dss solver has been factorized!!!\n\n");
 }
 
-void KMLRealSolverSolve(MySolver *solver)
+void KMLRealSolverSolve(MySolver *solver, KmlDssRefineMethod refine_method, int refine_maxit, double refine_tol)
 {
     int ierr = 0;
 
@@ -175,7 +195,9 @@ void KMLRealSolverSolve(MySolver *solver)
     printf(">>>> kml-dss solver begin to solver...\n");
     (solver->dss_solver_solve_option).fieldMask = KMLDSS_SOLVE_OPTION_SOLVE_STAGE | KMLDSS_SOLVE_OPTION_REFINE_METHOD;
     (solver->dss_solver_solve_option).stage = KMLDSS_SOLVE_ALL;
-    (solver->dss_solver_solve_option).refineMethod = KMLDSS_REFINE_OFF;
+    (solver->dss_solver_solve_option).refineMethod = refine_method;
+    (solver->dss_solver_solve_option).refineMaxSteps = refine_maxit;
+    (solver->dss_solver_solve_option).refineTolerance = refine_tol;
     ierr = KmlDssSolve(solver->dss_solver, solver->dss_solver_b, solver->dss_solver_x, &(solver->dss_solver_solve_option));
     if (ierr != KMLSS_NO_ERROR)
     {
@@ -386,7 +408,7 @@ void KMLComplexSolverFactor(MySolverComplex *solver, double factor_threshold)
     printf(">>>> kml-dss solver has been factorized!!!\n\n");
 }
 
-void KMLComplexSolverSolve(MySolverComplex *solver)
+void KMLComplexSolverSolve(MySolverComplex *solver, KmlDssRefineMethod refine_method, int refine_maxit, double refine_tol)
 {
     int ierr = 0;
 
@@ -394,7 +416,9 @@ void KMLComplexSolverSolve(MySolverComplex *solver)
     printf(">>>> kml-dss solver begin to solver...\n");
     (solver->dss_solver_solve_option).fieldMask = KMLDSS_SOLVE_OPTION_SOLVE_STAGE | KMLDSS_SOLVE_OPTION_REFINE_METHOD;
     (solver->dss_solver_solve_option).stage = KMLDSS_SOLVE_ALL;
-    (solver->dss_solver_solve_option).refineMethod = KMLDSS_REFINE_OFF;
+    (solver->dss_solver_solve_option).refineMethod = refine_method;
+    (solver->dss_solver_solve_option).refineMaxSteps = refine_maxit;
+    (solver->dss_solver_solve_option).refineTolerance = refine_tol;
     ierr = KmlDssSolve(solver->dss_solver, solver->dss_solver_b, solver->dss_solver_x, &(solver->dss_solver_solve_option));
     if (ierr != KMLSS_NO_ERROR)
     {
