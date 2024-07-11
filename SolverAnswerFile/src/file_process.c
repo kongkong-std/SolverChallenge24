@@ -14,6 +14,7 @@ void AnswerXFileProcess(const char *path, Vector *vec)
     fscanf(fp, "%d", &n);
     vec->n = n;
 
+#ifdef COMPLEX_VECTOR_
     if ((vec->row_idx = (int *)malloc(n * sizeof(int))) == NULL ||
         (vec->val_re = (double *)malloc(n * sizeof(double))) == NULL ||
         (vec->val_im = (double *)malloc(n * sizeof(double))) == NULL)
@@ -28,6 +29,19 @@ void AnswerXFileProcess(const char *path, Vector *vec)
                vec->val_re + index,
                vec->val_im + index);
     }
+#elif defined REAL_VECTOR_
+    if ((vec->row_idx = (int *)malloc(n * sizeof(int))) == NULL ||
+        (vec->val = (double *)malloc(n * sizeof(double))) == NULL)
+    {
+        fprintf(stderr, "Memory allocation failed - \'answer file\'\n");
+        exit(EXIT_FAILURE);
+    }
+
+    for (int index = 0; index < n; ++index)
+    {
+        fscanf(fp, "%d%lf", vec->row_idx + index, vec->val + index);
+    }
+#endif
 
     fclose(fp);
 }
