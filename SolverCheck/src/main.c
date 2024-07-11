@@ -3,6 +3,7 @@
 int main(int argc, char **argv)
 {
     char *path_mat = NULL, *path_rhs = NULL, *path_sol = NULL;
+    char *dst_mat = NULL;
     int sys_type = 0; // 0, real system; 1, complex system
     for (int index = 0; index < argc; ++index)
     {
@@ -21,6 +22,10 @@ int main(int argc, char **argv)
         if (strstr("-sys_type", argv[index]))
         {
             sys_type = atoi(argv[index + 1]);
+        }
+        if (strstr("-dst_mat", argv[index]))
+        {
+            dst_mat = argv[index + 1];
         }
     }
 
@@ -41,6 +46,30 @@ int main(int argc, char **argv)
             exit(EXIT_FAILURE);
         }
 
+        FILE *fp = NULL;
+        if ((fp = fopen(dst_mat, "wb")) == NULL)
+        {
+            fprintf(stderr, "Cannot open file!\n");
+            exit(EXIT_FAILURE);
+        }
+
+        fprintf(fp, "%d\n", m);
+        for (int index = 0; index < m + 1; ++index)
+        {
+            fprintf(fp, "%d\n", row_ptr[index] + 1);
+        }
+        for (int index = 0; index < nnz; ++index)
+        {
+            fprintf(fp, "%d\n", col_idx[index] + 1);
+        }
+        for (int index = 0; index < nnz; ++index)
+        {
+            fprintf(fp, "%021.16le\n", val[index]);
+        }
+
+        fclose(fp);
+
+#ifdef CHECK_ERROR_
         RealRHSFileProcess(path_rhs, &b);
         RealRHSFileProcess(path_sol, &x);
 
@@ -48,12 +77,13 @@ int main(int argc, char **argv)
         check_correctness(n, row_ptr, col_idx, val, x, b);
         // 2) using long double precision
         check_correctness_ld_d2ld(n, row_ptr, col_idx, val, x, b);
+        free(x);
+        free(b);
+#endif
 
         free(row_ptr);
         free(col_idx);
         free(val);
-        free(x);
-        free(b);
     }
 
     // complex system
@@ -67,6 +97,7 @@ int main(int argc, char **argv)
             exit(EXIT_FAILURE);
         }
 
+#ifdef CHECK_ERROR_
         ComplexRHSFileProcess(path_rhs, &b, &b_im);
         ComplexRHSFileProcess(path_sol, &x, &x_im);
 
@@ -75,14 +106,16 @@ int main(int argc, char **argv)
         // 2) using long double precision
         check_correctness_complex_ld_d2ld(n, row_ptr, col_idx, val, val_im, x, x_im, b, b_im);
 
-        free(row_ptr);
-        free(col_idx);
-        free(val);
-        free(val_im);
         free(x);
         free(x_im);
         free(b);
         free(b_im);
+#endif
+
+        free(row_ptr);
+        free(col_idx);
+        free(val);
+        free(val_im);
     }
 
     return 0;
