@@ -3,7 +3,9 @@
 int main(int argc, char **argv)
 {
     char *path_mat = NULL, *path_rhs = NULL, *path_sol = NULL;
+#ifdef CSR_MATRIX_FILE_
     char *dst_mat = NULL;
+#endif
     int sys_type = 0; // 0, real system; 1, complex system
     for (int index = 0; index < argc; ++index)
     {
@@ -23,10 +25,12 @@ int main(int argc, char **argv)
         {
             sys_type = atoi(argv[index + 1]);
         }
+#ifdef CSR_MATRIX_FILE_
         if (strstr("-dst_mat", argv[index]))
         {
             dst_mat = argv[index + 1];
         }
+#endif
     }
 
     int m = 0, n = 0, nnz = 0;
@@ -46,6 +50,7 @@ int main(int argc, char **argv)
             exit(EXIT_FAILURE);
         }
 
+#ifdef CSR_MATRIX_FILE_
         FILE *fp = NULL;
         if ((fp = fopen(dst_mat, "wb")) == NULL)
         {
@@ -68,6 +73,7 @@ int main(int argc, char **argv)
         }
 
         fclose(fp);
+#endif
 
 #ifdef CHECK_ERROR_
         RealRHSFileProcess(path_rhs, &b);
