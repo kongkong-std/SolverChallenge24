@@ -461,6 +461,8 @@ int main(int argc, const char **argv)
 
     // initialize x_0 as 0
     AMGX_vector_set_zero(x_0, n, 1);
+    AMGX_vector_set_zero(x_1, n, 1);
+    AMGX_vector_set_zero(x_2, n, 1);
 #endif // 3 rhs and solution create
 
 #if 1
@@ -515,10 +517,10 @@ int main(int argc, const char **argv)
         AMGX_solver_calculate_residual_norm(solver, A, b_0, x_0, &t_norm);
         printf(">>>> || b_0 || _ 2 = %021.16le\n", t_norm);
 
-        AMGX_solver_calculate_residual_norm(solver, A, b_1, x_0, &t_norm);
+        AMGX_solver_calculate_residual_norm(solver, A, b_1, x_1, &t_norm);
         printf(">>>> || b_1 || _ 2 = %021.16le\n", t_norm);
 
-        AMGX_solver_calculate_residual_norm(solver, A, b_2, x_0, &t_norm);
+        AMGX_solver_calculate_residual_norm(solver, A, b_2, x_2, &t_norm);
         printf(">>>> || b_2 || _ 2 = %021.16le\n", t_norm);
     }
 
@@ -606,6 +608,7 @@ int main(int argc, const char **argv)
             exit(EXIT_FAILURE);
         }
 
+#if 0
         double *x_tmp = NULL;
         if ((x_tmp = malloc(n * sizeof(double))) == NULL)
         {
@@ -630,6 +633,7 @@ int main(int argc, const char **argv)
             exit(EXIT_FAILURE);
         }
         printf(">>>> AMGX tmp solution data >>>> host to device %12.6lf ms\n", GetCurrentTime() - tt_amgx);
+#endif // initialize x_1 as solution of t0 system
 
         ierr = AMGX_solver_solve(solver, b_1, x_1); // linear system t1
         if (ierr != AMGX_RC_OK)
@@ -638,6 +642,7 @@ int main(int argc, const char **argv)
             exit(EXIT_FAILURE);
         }
 
+#if 0
         tt_amgx = GetCurrentTime();
         ierr = AMGX_vector_download(x_1, x_tmp);
         if (ierr != AMGX_RC_OK)
@@ -655,6 +660,10 @@ int main(int argc, const char **argv)
             exit(EXIT_FAILURE);
         }
         printf(">>>> AMGX tmp solution data >>>> host to device %12.6lf ms\n", GetCurrentTime() - tt_amgx);
+#endif // initialize x_2 as solution of t1 system
+
+        AMGX_vector_create(&x_2, rsrc, mode);
+        ierr = AMGX_vector_upload(x_2, n, 1, x_tmp);
 
         ierr = AMGX_solver_solve(solver, b_2, x_2); // linear system t2
         if (ierr != AMGX_RC_OK)
@@ -663,7 +672,7 @@ int main(int argc, const char **argv)
             exit(EXIT_FAILURE);
         }
 
-        free(x_tmp);
+        // free(x_tmp);
     }
     elapsed = (GetCurrentTime() - tt) / (double)(rep_times);
     printf("CHECK end to end time :         %12.6lf ms\n", elapsed);
@@ -738,6 +747,12 @@ int main(int argc, const char **argv)
     AMGX_solver_destroy(solver);
     AMGX_vector_destroy(x);
     AMGX_vector_destroy(b);
+    AMGX_vector_destroy(x_0);
+    AMGX_vector_destroy(b_0);
+    AMGX_vector_destroy(x_1);
+    AMGX_vector_destroy(b_1);
+    AMGX_vector_destroy(x_2);
+    AMGX_vector_destroy(b_2);
     AMGX_matrix_destroy(A);
     AMGX_resources_destroy(rsrc);
     /* destroy config (need to use AMGX_SAFE_CALL after this point) */
