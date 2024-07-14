@@ -662,9 +662,6 @@ int main(int argc, const char **argv)
         printf(">>>> AMGX tmp solution data >>>> host to device %12.6lf ms\n", GetCurrentTime() - tt_amgx);
 #endif // initialize x_2 as solution of t1 system
 
-        AMGX_vector_create(&x_2, rsrc, mode);
-        ierr = AMGX_vector_upload(x_2, n, 1, x_tmp);
-
         ierr = AMGX_solver_solve(solver, b_2, x_2); // linear system t2
         if (ierr != AMGX_RC_OK)
         {
